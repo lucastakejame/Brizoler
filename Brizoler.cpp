@@ -4,10 +4,12 @@
 // #include "sin.h"
 
 #define ZOOM_LIMIT 2
+// #define ZOOM_LIMIT 100000000
 #define SPEED_LIMIT 20
 
 float attenuator = 1;
 float stimulator = 1;
+int mode = 2;
 
 
 Brizoler::Brizoler()
@@ -140,6 +142,21 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
         }
         break;
 
+        case SDLK_1:
+        {
+            mode = 1;
+        }break;
+
+        case SDLK_2:
+        {
+            mode = 2;
+        }break;
+
+        case SDLK_3:
+        {
+            mode = 3;
+        }break;
+
         default:
         break;
     }
@@ -182,11 +199,32 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         {
             // float i_norm = (float) i/Surf->h;
             // float j_norm = (float) j/Surf->w;
-            int prod = (int)((i*i + j*j)*attenuator);
+            int prod;
+            // switch(mode)
+            // {
+            //     case 1:
+            //     {
+            //         prod = (int)((i*i + j*j)*attenuator);
+
+            //     }break;
+            //     case 2:
+            //     {
+            //         if(i == 0)
+            //             i = Surf->h+1;
+            //         if(j == 0)
+            //             j = Surf->w+1;
+            //         prod = (int)((i*jf)*attenuator);
+            //     }break;
+            //     case 3:
+            //     {
+                    prod = (int)((i*i + j*j)*attenuator);
+            //     }break;
+            // }
 
             red = (prod + OffsetX)%256;
             green = (prod + (int)(stimulator*OffsetY))%256;
             blue = (prod)%256;
+
             *pixel = SDL_MapRGB(Surf->format, red, green, blue);
             pixel++;
         }

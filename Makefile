@@ -6,7 +6,7 @@ CFLAGS += -Wcast-align -Wcast-qual
 
 LDFLAGS = -lSDLmain -lSDL
 
-EXEC = brizoler
+EXEC = brizoler.bin
 
 SRC = $(wildcard *.cpp)
 OBJ = $(SRC:.cpp=.o)
