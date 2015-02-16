@@ -3,8 +3,8 @@
 #include "Brizoler.h"
 // #include "sin.h"
 
-#define ZOOM_LIMIT 2
-// #define ZOOM_LIMIT 100000000
+// #define ZOOM_LIMIT 2
+#define ZOOM_LIMIT 5000
 #define SPEED_LIMIT 20
 
 float attenuator = 1;
@@ -157,6 +157,11 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
             mode = 3;
         }break;
 
+        case SDLK_4:
+        {
+            mode = 4;
+        }break;
+
         default:
         break;
     }
@@ -200,26 +205,32 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
             // float i_norm = (float) i/Surf->h;
             // float j_norm = (float) j/Surf->w;
             int prod;
-            // switch(mode)
-            // {
-            //     case 1:
-            //     {
-            //         prod = (int)((i*i + j*j)*attenuator);
-
-            //     }break;
-            //     case 2:
-            //     {
-            //         if(i == 0)
-            //             i = Surf->h+1;
-            //         if(j == 0)
-            //             j = Surf->w+1;
-            //         prod = (int)((i*jf)*attenuator);
-            //     }break;
-            //     case 3:
-            //     {
+            switch(mode)
+            {
+                case 1:
+                {
                     prod = (int)((i*i + j*j)*attenuator);
-            //     }break;
-            // }
+
+                }break;
+                case 2:
+                {
+                    prod = (int)((i*(j+OffsetY))*attenuator);
+                }break;
+                case 3:
+                {
+                    if(i%2 != 0)
+                        prod = (int)((i*i + j*j)*attenuator);
+                    else
+                        prod = (int)((i*(j+0))*attenuator);
+                }break;
+                case 4:
+                {
+                    // if(y == )
+                    //     prod = (int)((i*i + j*j)*attenuator);
+                    // else
+                    //     prod = (int)((i*(j+0))*attenuator);
+                }break;
+            }
 
             red = (prod + OffsetX)%256;
             green = (prod + (int)(stimulator*OffsetY))%256;
