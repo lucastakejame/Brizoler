@@ -1,8 +1,11 @@
 CC = g++
 LD = g++
 
+DEGUB = -g
+
 CFLAGS = -Wall -Wextra -Wpointer-arith -Wredundant-decls
 CFLAGS += -Wcast-align -Wcast-qual
+CFLAGS += $(DEBUG)
 
 LDFLAGS = -lSDLmain -lSDL
 

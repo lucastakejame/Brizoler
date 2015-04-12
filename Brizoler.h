@@ -10,6 +10,9 @@ public:
     SDL_Surface* Surf;
     bool Running;
 
+    int MouseX;
+    int MouseY;
+
     Brizoler();
     ~Brizoler();
 
@@ -38,6 +41,14 @@ public:
     void OnKeyUp(SDLKey sym, SDLMod mod, Uint16 unicode);
 
     void OnPaint(int OffsetX, int OffsetY);
+
+    void PaintLine(int line, int start, int end);
+
+    void PaintColumn(int column, int start, int end);
+
+    void LinesGettingSmaller();
+
+    void BlackScreen();
 };
 
 #endif

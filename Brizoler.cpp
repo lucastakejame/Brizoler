@@ -7,8 +7,8 @@
 #define ZOOM_LIMIT 5000
 #define SPEED_LIMIT 20
 
-float attenuator = 1;
-float stimulator = 1;
+float param_zoom = 1;
+float param_speed = 1;
 int mode = 2;
 
 
@@ -84,22 +84,26 @@ void Brizoler::OnMouseFocus()
 
 void Brizoler::OnMouseMove(int mX, int mY, int relX, int relY, bool Left,bool Right,bool Middle)
 {
+
+    this->MouseX = mX;
+    this->MouseY = mY;
+
     if(Left)
     {
-        attenuator = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
-        stimulator = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
-        printf("attenuator : %f \n", attenuator);
-        printf("stimulator : %f \n", stimulator);
+        param_zoom = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
+        param_speed = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
+        // printf("param_zoom : %f \n", param_zoom);
+        // printf("param_speed : %f \n", param_speed);
     }
 }
 
 
 void Brizoler::OnLButtonDown(int mX, int mY)
 {
-    attenuator = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
-    stimulator = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
-    printf("attenuator : %f \n", attenuator);
-    printf("stimulator : %f \n", stimulator);
+    param_zoom = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
+    param_speed = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
+    // printf("param_zoom : %f \n", param_zoom);
+    // printf("param_speed : %f \n", param_speed);
 }
 
 void Brizoler::OnLButtonUp(int mX, int mY)
@@ -112,32 +116,32 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
     {
         case SDLK_UP:
         {
-            if(attenuator < ZOOM_LIMIT){
-                attenuator += 0.01;
+            if(param_zoom < ZOOM_LIMIT){
+                param_zoom += 0.005;
             }
         }
         break;
 
         case SDLK_DOWN:
         {
-            if(attenuator > 0.015){
-                attenuator -= 0.01;
+            if(param_zoom > 0.015){
+                param_zoom -= 0.005;
             }
         }
         break;
 
         case SDLK_RIGHT:
         {
-            if(stimulator < SPEED_LIMIT){
-                stimulator += 0.01;
+            if(param_speed < SPEED_LIMIT){
+                param_speed += 0.01;
             }
         }
         break;
 
         case SDLK_LEFT:
         {
-            if(stimulator > 0.015){
-                stimulator -= 0.01;
+            if(param_speed > 0.015){
+                param_speed -= 0.01;
             }
         }
         break;
@@ -160,6 +164,11 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
         case SDLK_4:
         {
             mode = 4;
+        }break;
+
+        case SDLK_5:
+        {
+            mode = 5;
         }break;
 
         default:
@@ -185,6 +194,97 @@ void Brizoler::OnExit()
     Running = false;
 }
 
+int FunctionPoint(int x)
+{
+    int y;
+
+    y = x*(float)param_zoom/800;
+
+    return y;
+}
+
+void Brizoler::PaintLine(int line, int start, int end)
+{
+
+    Uint32 *pixel = (Uint32*)Surf->pixels;
+
+    int current_line;
+
+    // goes to desired line
+    pixel += Surf->w*line;
+    pixel += start;
+
+    for (int j = 0; j < end-start; ++j)
+    {
+        *pixel = SDL_MapRGB(Surf->format, 255, 255, 255);
+        pixel++;
+    }
+}
+
+void Brizoler::PaintColumn(int column, int start, int end)
+{
+    Uint32 *pixel = (Uint32*)Surf->pixels;
+
+    int current_column;
+
+    // goes to desired line
+    pixel += Surf->w*start;
+    pixel += column;
+
+    for (int j = 0; j < end-start; ++j)
+    {
+        *pixel = SDL_MapRGB(Surf->format, 255, 255, 255);
+        pixel += Surf->w;
+    }
+}
+
+void Brizoler::BlackScreen()
+{
+
+    Uint32 *pixel;
+    pixel = (Uint32*)Surf->pixels;
+
+
+    for (int i = 0; i < Surf->h; ++i)
+    {
+        for (int j = 0; j < Surf->w; ++j)
+        {
+            *pixel = SDL_MapRGB(Surf->format, 0, 0, 0);
+            pixel++;
+        }
+    }
+}
+
+void Brizoler::LinesGettingSmaller()
+{
+    int current_line_height = 0;
+    int current_line_width = Surf->w;
+
+    int num_lines = 20;
+
+    float space_between_lines = (float) this->MouseY/num_lines;
+    float width_decrease = ((float) current_line_width)/(2*num_lines);
+
+    float width_delta1 = (float) this->MouseX/num_lines;
+    float width_delta2 = (float) (Surf->w - this->MouseX)/num_lines;
+
+    float height_delta1 = (float) this->MouseY/num_lines;
+    float height_delta2 = (float) (Surf->h - this->MouseY)/num_lines;
+
+    for(int i = 0;current_line_height <= this->MouseY &&
+                 current_line_height <= Surf->h &&
+                  current_line_width > 0 &&
+                  space_between_lines > 1; i++ )
+    {
+        PaintLine(current_line_height, (int)(i*width_delta1), Surf->w - (int)(i*width_delta2));
+        PaintColumn((int)(i*width_delta1), current_line_height, Surf->h - (int)(i*height_delta2));
+
+        current_line_height += (int) space_between_lines;
+        // current_line_width -= (int) width_decrease;
+    }
+
+}
+
 void Brizoler::OnPaint(int OffsetX, int OffsetY)
 {
     if(SDL_MUSTLOCK(Surf)) {
@@ -198,49 +298,119 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
     int bytes_per_pixel = Surf->format->BytesPerPixel;
     Uint32 *pixel;
     pixel = (Uint32*)Surf->pixels;
-    for (int i = 0; i < Surf->h; ++i)
-    {
-        for (int j = 0; j < Surf->w; ++j)
-        {
+
+
+    int old_func_x = FunctionPoint(0);
+
             // float i_norm = (float) i/Surf->h;
             // float j_norm = (float) j/Surf->w;
-            int prod;
-            switch(mode)
-            {
-                case 1:
-                {
-                    prod = (int)((i*i + j*j)*attenuator);
+    int prod;
+    switch(mode)
+    {
+        case 1:
+        {
 
-                }break;
-                case 2:
+            for (int i = 0; i < Surf->h; ++i)
+            {
+                for (int j = 0; j < Surf->w; ++j)
                 {
-                    prod = (int)((i*(j+OffsetY))*attenuator);
-                }break;
-                case 3:
-                {
-                    if(i%2 != 0)
-                        prod = (int)((i*i + j*j)*attenuator);
-                    else
-                        prod = (int)((i*(j+0))*attenuator);
-                }break;
-                case 4:
-                {
-                    // if(y == )
-                    //     prod = (int)((i*i + j*j)*attenuator);
-                    // else
-                    //     prod = (int)((i*(j+0))*attenuator);
-                }break;
+
+                    prod = (int)((i*i + j*j)*param_zoom);
+
+                    red = (prod + OffsetX)%256;
+                    green = (prod + (int)(param_speed*OffsetY))%256;
+                    blue = (prod)%256;
+
+
+                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    pixel++;
+                }
             }
 
-            red = (prod + OffsetX)%256;
-            green = (prod + (int)(stimulator*OffsetY))%256;
-            blue = (prod)%256;
 
-            *pixel = SDL_MapRGB(Surf->format, red, green, blue);
-            pixel++;
-        }
+        }break;
+        case 2:
+        {
+
+            for (int i = 0; i < Surf->h; ++i)
+            {
+                for (int j = 0; j < Surf->w; ++j)
+                {
+
+                    prod = (int)((i*(j+OffsetY))*param_zoom);
+                    red = (prod + OffsetX)%256;
+                    green = (prod + (int)(param_speed*OffsetY))%256;
+                    blue = (prod)%256;
+
+                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    pixel++;
+                }
+            }
+
+
+        }break;
+        case 3:
+        {
+
+            for (int i = 0; i < Surf->h; ++i)
+            {
+                for (int j = 0; j < Surf->w; ++j)
+                {
+
+                    if(i%2 != 0)
+                        prod = (int)((i*i*i + j*j*j)*param_zoom);
+                    else
+                        prod = (int)((i*(j+0))*param_zoom);
+                    red = (prod + OffsetX)%256;
+                    green = (prod + (int)(param_speed*OffsetY))%256;
+                    blue = (prod)%256;
+
+                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    pixel++;
+                }
+            }
+
+
+        }break;
+        case 4:
+        {
+
+            for (int i = 0; i < Surf->h; ++i)
+            {
+                for (int j = 0; j < Surf->w; ++j)
+                {
+
+                    int func_x = FunctionPoint(i);
+                    if(j == func_x)
+                        prod = 1;
+                    else
+                        prod = 0;
+
+                    red = prod * 255;
+                    green = prod * 255;
+                    blue = prod * 255;
+
+                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    pixel++;
+                }
+            }
+
+
+        }break;
+        case 5:
+        {
+            BlackScreen();
+            LinesGettingSmaller();
+        }break;
+
+        default:
+        {
+            PaintLine(0,0,0);
+        }break;
     }
-    if(SDL_MUSTLOCK(Surf)) {
+
+    if(SDL_MUSTLOCK(Surf))
+    {
         SDL_UnlockSurface(Surf);
     }
     SDL_UpdateRect(Surf, 0, 0, Surf->w, Surf->h);
