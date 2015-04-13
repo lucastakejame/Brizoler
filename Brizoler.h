@@ -10,8 +10,8 @@ public:
     SDL_Surface* Surf;
     bool Running;
 
-    int MouseX;
-    int MouseY;
+    int mouse_x;
+    int mouse_y;
 
     Brizoler();
     ~Brizoler();
@@ -42,13 +42,17 @@ public:
 
     void OnPaint(int OffsetX, int OffsetY);
 
-    void PaintLine(int line, int start, int end);
+    void PaintLine(int line, int start, int end, int red, int green, int blue);
 
-    void PaintColumn(int column, int start, int end);
+    void PaintColumn(int column, int start, int end, int red, int green, int blue);
 
     void LinesGettingSmaller();
 
+    void InfiniteSquares(int num_squares);
+
     void BlackScreen();
+
+    void Rect(int left_cornerX, int left_cornerY, int width, int height, int red, int green, int blue);
 };
 
 #endif
