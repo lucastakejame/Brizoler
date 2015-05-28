@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "Brizoler.h"
+#include "Star.h"
 // #include "sin.h"
 
 // #define ZOOM_LIMIT 2
@@ -12,35 +13,11 @@ float param_speed = 1;
 int mode = 2;
 
 
-Brizoler::Brizoler()
-{
-    this->Running = true;
-}
-Brizoler::~Brizoler(){}
-
-bool Brizoler::OnInit()
-{
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        return false;
-    }
-
-    if((Surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
-                                0, /*height, 0 means any height*/
-                                0, /*bites per pixel, 0 means use current*/
-                                SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
-                                )
-                                ) == NULL)
-    {
-        return false;
-    }
-
-    SDL_EnableKeyRepeat(1, 10);
-
-    return true;
-}
 
 int Brizoler::OnExecute() {
+
     if(OnInit() == false) {
+
         return -1;
     }
 
@@ -66,8 +43,51 @@ int Brizoler::OnExecute() {
     return 0;
 }
 
+Brizoler::Brizoler()
+{
+    this->Running = true;
+}
+Brizoler::~Brizoler(){}
+
+bool Brizoler::OnInit()
+{
+
+    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+        return false;
+    }
+
+    if((this->surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
+                                    0, /*height, 0 means any height*/
+                                    0, /*bites per pixel, 0 means use current*/
+                                    SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+                                    )
+                                    ) == NULL &&
+        (this->canvas_surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
+                                        0, /*height, 0 means any height*/
+                                        0, /*bites per pixel, 0 means use current*/
+                                        SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+                                        )
+                                        ) == NULL)
+    {
+        return false;
+    }
+
+    uint canvas_size = this->surf->h*this->surf->w*3;
+
+    canvas = new uint[canvas_size];
+    if(!canvas)
+    {
+        return false;
+    }
+
+    SDL_EnableKeyRepeat(1, 10);
+
+    return true;
+}
+
 void Brizoler::OnCleanup() {
-    SDL_FreeSurface(Surf);
+    free(canvas);
+    SDL_FreeSurface(surf);
     SDL_Quit();
 }
 
@@ -90,20 +110,16 @@ void Brizoler::OnMouseMove(int mX, int mY, int relX, int relY, bool Left,bool Ri
 
     if(Left)
     {
-        param_zoom = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
-        param_speed = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
-        // printf("param_zoom : %f \n", param_zoom);
-        // printf("param_speed : %f \n", param_speed);
+        param_zoom = ((float)mY/surf->h)*ZOOM_LIMIT + 0.01;
+        param_speed = ((float)mX/surf->w)*SPEED_LIMIT + 0.01;
     }
 }
 
 
 void Brizoler::OnLButtonDown(int mX, int mY)
 {
-    param_zoom = ((float)mY/Surf->h)*ZOOM_LIMIT + 0.01;
-    param_speed = ((float)mX/Surf->w)*SPEED_LIMIT + 0.01;
-    // printf("param_zoom : %f \n", param_zoom);
-    // printf("param_speed : %f \n", param_speed);
+    param_zoom = ((float)mY/surf->h)*ZOOM_LIMIT + 0.01;
+    param_speed = ((float)mX/surf->w)*SPEED_LIMIT + 0.01;
 }
 
 void Brizoler::OnLButtonUp(int mX, int mY)
@@ -187,8 +203,8 @@ void Brizoler::OnKeyUp(SDLKey sym, SDLMod mod, Uint16 unicode)
 
 void Brizoler::OnResize(int w,int h)
 {
-    Surf = SDL_SetVideoMode(w, h, 0, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-    if(NULL == Surf) {
+    surf = SDL_SetVideoMode(w, h, 0, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+    if(NULL == surf) {
         fprintf(stderr, "Unable to resize video mode: %s\n", SDL_GetError());
         exit(2);
     }
@@ -208,19 +224,19 @@ int FunctionPoint(int x)
     return y;
 }
 
-void Brizoler::PaintLine(int line, int start, int end, int red, int green, int blue)
+void Brizoler::PaintLine(int line, int start, int end, Uint8 red, Uint8 green, Uint8 blue)
 {
 
-    Uint32 *pixel = (Uint32*)Surf->pixels;
+    Uint32 *pixel = (Uint32*)surf->pixels;
 
     int current_line;
 
-    if(end > Surf->w)
-        end = Surf->w - 1;
+    if(end > surf->w)
+        end = surf->w - 1;
 
     // goes to desired start point
-    int offset = line*Surf->w + start;
-    int limit = Surf->w*Surf->h;
+    int offset = line*surf->w + start;
+    int limit = surf->w*surf->h;
 
 
     for (int j = 0; j < end-start; ++j)
@@ -230,37 +246,37 @@ void Brizoler::PaintLine(int line, int start, int end, int red, int green, int b
         {
             index = limit;
         }
-        pixel[index] = SDL_MapRGB(Surf->format, red, green, blue);
+        pixel[index] = SDL_MapRGB(surf->format, red, green, blue);
     }
 }
 
-void Brizoler::PaintColumn(int column, int start, int end, int red, int green, int blue)
+void Brizoler::PaintColumn(int column, int start, int end, Uint8 red, Uint8 green, Uint8 blue)
 {
-    Uint32 *pixel = (Uint32*)Surf->pixels;
+    Uint32 *pixel = (Uint32*)surf->pixels;
 
     int current_column;
 
-    if(end > Surf->h)
-        end = Surf->h - 1;
+    if(end > surf->h)
+        end = surf->h - 1;
 
-    int limit = Surf->w*Surf->h;
+    int limit = surf->w*surf->h;
 
     // goes to desired start point
-    int offset = Surf->w*start + column;
+    int offset = surf->w*start + column;
 
     for (int j = 0; j < end-start; ++j)
     {
-        int index = offset + j*Surf->w;
+        int index = offset + j*surf->w;
         if(index > limit)
         {
             index = limit;
         }
 
-        pixel[index] = SDL_MapRGB(Surf->format, red, green, blue);
+        pixel[index] = SDL_MapRGB(surf->format, red, green, blue);
     }
 }
 
-void Brizoler::Rect(int left_cornerX, int left_cornerY, int width, int height, int red, int green, int blue)
+void Brizoler::Rect(int left_cornerX, int left_cornerY, int width, int height, Uint8 red, Uint8 green, Uint8 blue)
 {
     PaintLine(left_cornerY, left_cornerX, left_cornerX + width, red, green, blue);            //  -----
     PaintColumn(left_cornerX + width, left_cornerY, left_cornerY + height, red, green, blue); //       |
@@ -272,42 +288,40 @@ void Brizoler::BlackScreen()
 {
 
     Uint32 *pixel;
-    pixel = (Uint32*)Surf->pixels;
+    pixel = (Uint32*)surf->pixels;
 
 
-    for (int i = 0; i < Surf->h; ++i)
+    for (int i = 0; i < surf->h; ++i)
     {
-        for (int j = 0; j < Surf->w; ++j)
+        for (int j = 0; j < surf->w; ++j)
         {
-            *pixel = SDL_MapRGB(Surf->format, 0, 0, 0);
+            *pixel = SDL_MapRGB(surf->format, 0, 0, 0);
             pixel++;
         }
     }
 }
 
-void Brizoler::LinesGettingSmaller()
+void Brizoler::LinesGettingSmaller(int num_lines)
 {
     int current_line_height = 0;
-    int current_line_width = Surf->w;
-
-    int num_lines = 20;
+    int current_line_width = surf->w;
 
     float space_between_lines = (float) this->mouse_y/num_lines;
     float width_decrease = ((float) current_line_width)/(2*num_lines);
 
     float width_delta1 = (float) this->mouse_x/num_lines;
-    float width_delta2 = (float) (Surf->w - this->mouse_x)/num_lines;
+    float width_delta2 = (float) (surf->w - this->mouse_x)/num_lines;
 
     float height_delta1 = (float) this->mouse_y/num_lines;
-    float height_delta2 = (float) (Surf->h - this->mouse_y)/num_lines;
+    float height_delta2 = (float) (surf->h - this->mouse_y)/num_lines;
 
     for(int i = 0;current_line_height <= this->mouse_y &&
-                 current_line_height <= Surf->h &&
+                 current_line_height <= surf->h &&
                   current_line_width > 0 &&
                   space_between_lines > 1; i++ )
     {
-        PaintLine(current_line_height, (int)(i*width_delta1), Surf->w - (int)(i*width_delta2), 255, 255, 255);
-        PaintColumn((int)(i*width_delta1), current_line_height, Surf->h - (int)(i*height_delta2), 255, 255, 255);
+        PaintLine(current_line_height, (int)(i*width_delta1), surf->w - (int)(i*width_delta2), 255, 255, 255);
+        PaintColumn((int)(i*width_delta1), current_line_height, surf->h - (int)(i*height_delta2), 255, 255, 255);
 
         current_line_height += (int) space_between_lines;
     }
@@ -327,13 +341,13 @@ void Brizoler::InfiniteSquares(int num_squares)
 
     float horizontal_step = ((float) mouse_x)/num_squares; // distance between squares
     float vertical_step = ((float) mouse_y)/num_squares;
-    float width_decrease_step = ((float) Surf->w)/num_squares; // square lines decreasing rate
-    float height_decrease_step = ((float) Surf->h)/num_squares;
+    float width_decrease_step = ((float) surf->w)/num_squares; // square lines decreasing rate
+    float height_decrease_step = ((float) surf->h)/num_squares;
 
     int square_x = 0;
     int square_y = 0;
-    int square_width = Surf->w;
-    int square_height = Surf->h;
+    int square_width = surf->w;
+    int square_height = surf->h;
 
     for(int i = 0; i < num_squares; i++)
     {
@@ -347,35 +361,73 @@ void Brizoler::InfiniteSquares(int num_squares)
 
 }
 
+void Brizoler::Stars(uint num_stars)
+{
+    static Star **stars = 0;
+    Uint32 *writing_pixel;
+
+
+    if(!stars)
+    {
+
+        stars = (Star**) malloc(num_stars*(sizeof(Star*)));
+        for(uint k = 0; k < num_stars; k++)
+        {
+            stars[k] = new Star(surf->w, surf->h, this->canvas);
+        }
+    }
+
+    for(uint i = 0; i < num_stars; i++)
+    {
+        stars[i]->Animate(this->mouse_x, this->mouse_y, (random()*i), (random()*i));
+
+        uint index = stars[i]->pos_y*surf->w + stars[i]->pos_x;
+
+        uint limit = surf->w*surf->h;
+
+        if(index > limit)
+        {
+            index = (index%limit + (this->mouse_y)*surf->w + this->mouse_x)%limit;
+        }
+
+        writing_pixel = (Uint32*) surf->pixels;
+        writing_pixel += index;
+
+        *writing_pixel = SDL_MapRGB(surf->format, stars[i]->red, stars[i]->green, stars[i]->blue);
+    }
+
+
+}
+
 
 void Brizoler::OnPaint(int OffsetX, int OffsetY)
 {
-    if(SDL_MUSTLOCK(Surf)) {
-        SDL_LockSurface(Surf);
+    if(SDL_MUSTLOCK(surf)) {
+        SDL_LockSurface(surf);
     }
 
     Uint8 red;
     Uint8 green;
     Uint8 blue;
 
-    int bytes_per_pixel = Surf->format->BytesPerPixel;
+    int bytes_per_pixel = surf->format->BytesPerPixel;
     Uint32 *pixel;
-    pixel = (Uint32*)Surf->pixels;
+    pixel = (Uint32*)surf->pixels;
 
 
     int old_func_x = FunctionPoint(0);
 
-            // float i_norm = (float) i/Surf->h;
-            // float j_norm = (float) j/Surf->w;
+            // float i_norm = (float) i/surf->h;
+            // float j_norm = (float) j/surf->w;
     int prod;
     switch(mode)
     {
         case 1:
         {
 
-            for (int i = 0; i < Surf->h; ++i)
+            for (int i = 0; i < surf->h; ++i)
             {
-                for (int j = 0; j < Surf->w; ++j)
+                for (int j = 0; j < surf->w; ++j)
                 {
 
                     prod = (int)((i*i + j*j)*param_zoom);
@@ -385,7 +437,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                     blue = (prod)%256;
 
 
-                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
                     pixel++;
                 }
             }
@@ -395,9 +447,9 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         case 2:
         {
 
-            for (int i = 0; i < Surf->h; ++i)
+            for (int i = 0; i < surf->h; ++i)
             {
-                for (int j = 0; j < Surf->w; ++j)
+                for (int j = 0; j < surf->w; ++j)
                 {
 
                     prod = (int)((i*(j+OffsetY))*param_zoom);
@@ -405,7 +457,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                     green = (prod + (int)(param_speed*OffsetY))%256;
                     blue = (prod)%256;
 
-                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
                     pixel++;
                 }
             }
@@ -415,9 +467,9 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         case 3:
         {
 
-            for (int i = 0; i < Surf->h; ++i)
+            for (int i = 0; i < surf->h; ++i)
             {
-                for (int j = 0; j < Surf->w; ++j)
+                for (int j = 0; j < surf->w; ++j)
                 {
 
                     if(i%2 != 0)
@@ -428,7 +480,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                     green = (prod + (int)(param_speed*OffsetY))%256;
                     blue = (prod)%256;
 
-                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
                     pixel++;
                 }
             }
@@ -438,9 +490,9 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         case 4:
         {
 
-            for (int i = 0; i < Surf->h; ++i)
+            for (int i = 0; i < surf->h; ++i)
             {
-                for (int j = 0; j < Surf->w; ++j)
+                for (int j = 0; j < surf->w; ++j)
                 {
 
                     int func_x = FunctionPoint(i);
@@ -453,7 +505,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                     green = prod * 255;
                     blue = prod * 255;
 
-                    *pixel = SDL_MapRGB(Surf->format, red, green, blue);
+                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
                     pixel++;
                 }
             }
@@ -462,7 +514,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         }break;
         case 5:
         {
-            static int num = 40;
+            static int num = 37;
             static int sin_phase = 0;
             static int change_counter = 0;
 
@@ -472,20 +524,41 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
             // }
 
 
-            // BlackScreen();
+            BlackScreen();
+            SDL_SetAlpha(surf, SDL_SRCALPHA|SDL_RLEACCEL, 40);
             InfiniteSquares(num);
+            // for (int i = 0; i < 9999999; ++i);
+            // SDL_SetAlpha(surf, SDL_SRCALPHA|SDL_RLEACCEL, 40);
+            // InfiniteSquares(num);
+            // for (int i = 0; i < 9999999; ++i);
+            // SDL_SetAlpha(surf, SDL_SRCALPHA|SDL_RLEACCEL, 255);
+            // InfiniteSquares(num);
+            // for (int i = 0; i < 9999999; ++i);
+            // SDL_SetAlpha(surf, SDL_SRCALPHA|SDL_RLEACCEL, 255);
+            // InfiniteSquares(num);
+        }break;
+
+        case 6:
+        {
+            static int num = 30;
+
+            // BlackScreen();
+            Stars(num);
+
         }break;
 
         default:
         {
+            static int num = 36;
+
             BlackScreen();
-            LinesGettingSmaller();
+            LinesGettingSmaller(num);
         }break;
     }
 
-    if(SDL_MUSTLOCK(Surf))
+    if(SDL_MUSTLOCK(surf))
     {
-        SDL_UnlockSurface(Surf);
+        SDL_UnlockSurface(surf);
     }
-    SDL_UpdateRect(Surf, 0, 0, Surf->w, Surf->h);
+    SDL_UpdateRect(surf, 0, 0, surf->w, surf->h);
 }

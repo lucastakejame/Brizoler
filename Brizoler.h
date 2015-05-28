@@ -7,7 +7,9 @@
 class Brizoler: public CEvent
 {
 public:
-    SDL_Surface* Surf;
+    SDL_Surface* surf;
+    SDL_Surface* canvas_surf;
+    uint* canvas;
     bool Running;
 
     int mouse_x;
@@ -42,17 +44,19 @@ public:
 
     void OnPaint(int OffsetX, int OffsetY);
 
-    void PaintLine(int line, int start, int end, int red, int green, int blue);
+    void PaintLine(int line, int start, int end, Uint8 red, Uint8 green, Uint8 blue);
 
-    void PaintColumn(int column, int start, int end, int red, int green, int blue);
+    void PaintColumn(int column, int start, int end, Uint8 red, Uint8 green, Uint8 blue);
 
-    void LinesGettingSmaller();
+    void LinesGettingSmaller(int num_lines);
 
     void InfiniteSquares(int num_squares);
 
     void BlackScreen();
 
-    void Rect(int left_cornerX, int left_cornerY, int width, int height, int red, int green, int blue);
+    void Rect(int left_cornerX, int left_cornerY, int width, int height, Uint8 red, Uint8 green, Uint8 blue);
+
+    void Stars(uint num_stars);
 };
 
 #endif

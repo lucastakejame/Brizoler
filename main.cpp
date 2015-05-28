@@ -1,4 +1,5 @@
 #include <SDL/SDL.h>
+#include <stdio.h>
 #include "Brizoler.h"
 
 Brizoler briz;
