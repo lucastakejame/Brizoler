@@ -57,6 +57,7 @@ public:
     void Rect(int left_cornerX, int left_cornerY, int width, int height, Uint8 red, Uint8 green, Uint8 blue);
 
     void Stars(uint num_stars);
+
 };
 
 #endif

@@ -1,12 +1,14 @@
+#include <iostream>
+using namespace std;
 #include <stdio.h>
 #include <math.h>
 #include "Brizoler.h"
 #include "Star.h"
 // #include "sin.h"
 
-// #define ZOOM_LIMIT 2
-#define ZOOM_LIMIT 5000
-#define SPEED_LIMIT 20
+// #define zoom_limit 2
+static int zoom_limit = 20;
+static int speed_limit = 20;
 
 float param_zoom = 1;
 float param_speed = 1;
@@ -15,6 +17,9 @@ int mode = 2;
 
 
 int Brizoler::OnExecute() {
+
+    // printf("Insira um limite de zoom e velocidade: ");
+    // scanf("%i %i", &zoom_limit, &speed_limit);
 
     if(OnInit() == false) {
 
@@ -110,16 +115,16 @@ void Brizoler::OnMouseMove(int mX, int mY, int relX, int relY, bool Left,bool Ri
 
     if(Left)
     {
-        param_zoom = ((float)mY/surf->h)*ZOOM_LIMIT + 0.01;
-        param_speed = ((float)mX/surf->w)*SPEED_LIMIT + 0.01;
+        param_zoom = ((float)mY/surf->h)*zoom_limit + 0.01;
+        param_speed = ((float)mX/surf->w)*speed_limit + 0.01;
     }
 }
 
 
 void Brizoler::OnLButtonDown(int mX, int mY)
 {
-    param_zoom = ((float)mY/surf->h)*ZOOM_LIMIT + 0.01;
-    param_speed = ((float)mX/surf->w)*SPEED_LIMIT + 0.01;
+    param_zoom = ((float)mY/surf->h)*zoom_limit + 0.01;
+    param_speed = ((float)mX/surf->w)*speed_limit + 0.01;
 }
 
 void Brizoler::OnLButtonUp(int mX, int mY)
@@ -132,7 +137,7 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
     {
         case SDLK_UP:
         {
-            if(param_zoom < ZOOM_LIMIT){
+            if(param_zoom < zoom_limit){
                 param_zoom += 0.005;
             }
         }
@@ -148,7 +153,7 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
 
         case SDLK_RIGHT:
         {
-            if(param_speed < SPEED_LIMIT){
+            if(param_speed < speed_limit){
                 param_speed += 0.01;
             }
         }
@@ -373,32 +378,33 @@ void Brizoler::Stars(uint num_stars)
         stars = (Star**) malloc(num_stars*(sizeof(Star*)));
         for(uint k = 0; k < num_stars; k++)
         {
-            stars[k] = new Star(surf->w, surf->h, this->canvas);
+            stars[k] = new Star(surf->w, surf->h, (Uint32*) surf->pixels);
+            // stars[k] = new Star(surf->w, surf->h, 4, this->canvas);
+            stars[k]->Set_Color(random()%256, random()%256, random()%256);
         }
     }
 
     for(uint i = 0; i < num_stars; i++)
     {
-        stars[i]->Animate(this->mouse_x, this->mouse_y, (random()*i), (random()*i));
+        stars[i]->Animate(this->mouse_x, this->mouse_y, 10, 11);
 
-        uint index = stars[i]->pos_y*surf->w + stars[i]->pos_x;
 
-        uint limit = surf->w*surf->h;
+        // uint index = stars[i]->pos_y*surf->w + stars[i]->pos_x;
 
-        if(index > limit)
-        {
-            index = (index%limit + (this->mouse_y)*surf->w + this->mouse_x)%limit;
-        }
+        // uint limit = surf->w*surf->h;
 
-        writing_pixel = (Uint32*) surf->pixels;
-        writing_pixel += index;
+        // if(index > limit)
+        // {
+        //     index = (index%limit + (this->mouse_y)*surf->w + this->mouse_x)%limit;
+        // }
 
-        *writing_pixel = SDL_MapRGB(surf->format, stars[i]->red, stars[i]->green, stars[i]->blue);
+        // writing_pixel = (Uint32*) surf->pixels;
+        // writing_pixel += index;
+
+        // *writing_pixel = SDL_MapRGB(surf->format, stars[i]->red, stars[i]->green, stars[i]->blue);
     }
 
-
 }
-
 
 void Brizoler::OnPaint(int OffsetX, int OffsetY)
 {
@@ -540,7 +546,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
 
         case 6:
         {
-            static int num = 30;
+            static int num = 100000;
 
             // BlackScreen();
             Stars(num);
