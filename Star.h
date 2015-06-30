@@ -22,6 +22,9 @@ struct Star
     char dir_x;
     char dir_y;
 
+    float accel_x;
+    float accel_y;
+
     Uint8 red;
     Uint8 green;
     Uint8 blue;
@@ -39,6 +42,8 @@ struct Star
     void Set_Color(Uint8 red, Uint8 green, Uint8 blue);
 
     void Canvas_Paint(uint x, uint y, Uint8 red, Uint8 green, Uint8 blue);
+
+    void Change_Direction();
 
 };
 

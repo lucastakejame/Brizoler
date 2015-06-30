@@ -10,6 +10,8 @@ using namespace std;
 static int zoom_limit = 20;
 static int speed_limit = 20;
 
+static int stars_change_direction_flag = 0;
+
 float param_zoom = 1;
 float param_speed = 1;
 int mode = 2;
@@ -64,7 +66,7 @@ bool Brizoler::OnInit()
     if((this->surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
                                     0, /*height, 0 means any height*/
                                     0, /*bites per pixel, 0 means use current*/
-                                    SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+                                    SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE | SDL_FULLSCREEN
                                     )
                                     ) == NULL &&
         (this->canvas_surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
@@ -86,6 +88,8 @@ bool Brizoler::OnInit()
     }
 
     SDL_EnableKeyRepeat(1, 10);
+
+    SDL_ShowCursor(SDL_DISABLE);
 
     return true;
 }
@@ -167,6 +171,12 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
         }
         break;
 
+        case SDLK_ESCAPE:
+        {
+            OnExit();
+        }
+        break;
+
         case SDLK_1:
         {
             mode = 1;
@@ -195,6 +205,11 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
         case SDLK_6:
         {
             mode = 6;
+        }break;
+
+        case SDLK_c:
+        {
+            stars_change_direction_flag = 1;
         }break;
 
         default:
@@ -388,6 +403,10 @@ void Brizoler::Stars(uint num_stars)
     {
         stars[i]->Animate(this->mouse_x, this->mouse_y, 10, 11);
 
+        if(stars_change_direction_flag)
+        {
+            stars[i]->Change_Direction();
+        }
 
         // uint index = stars[i]->pos_y*surf->w + stars[i]->pos_x;
 
@@ -403,6 +422,7 @@ void Brizoler::Stars(uint num_stars)
 
         // *writing_pixel = SDL_MapRGB(surf->format, stars[i]->red, stars[i]->green, stars[i]->blue);
     }
+    stars_change_direction_flag = 0;
 
 }
 
@@ -520,7 +540,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         }break;
         case 5:
         {
-            static int num = 37;
+            static int num = 50;
             static int sin_phase = 0;
             static int change_counter = 0;
 
@@ -546,7 +566,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
 
         case 6:
         {
-            static int num = 100000;
+            static int num = 999;
 
             // BlackScreen();
             Stars(num);
