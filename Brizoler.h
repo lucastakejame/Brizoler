@@ -56,6 +56,8 @@ public:
 
     void BlackScreen();
 
+    void BlurScreen();
+
     void Rect(int left_cornerX, int left_cornerY, int width, int height, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
 
     void Stars(uint num_stars);
@@ -67,6 +69,13 @@ public:
     bool PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 
     bool fPaintPixel(float x, float y, Uint8 red, Uint8 green, Uint8 blue);
+
+    Uint8 GetRed(int x, int y);
+
+    Uint8 GetGreen(int x, int y);
+
+    Uint8 GetBlue(int x, int y);
+
 
 };
 
