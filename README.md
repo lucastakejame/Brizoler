@@ -2,7 +2,7 @@
 
 30/06/2015
 
-	I was watching a HandMade hero video and coding along with it.
+I was watching a HandMade hero video and coding along with it.
 When it finished, I started messing around with a function that wrote at the display
 buffer and kinda created an interesting animated pattern in the screen. Later, I
 started this same code on linux using SDL making the same math patterns 
