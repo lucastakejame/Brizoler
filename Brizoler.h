@@ -44,9 +44,11 @@ public:
 
     void OnPaint(int OffsetX, int OffsetY);
 
-    void PaintLine(int line, int start, int end, Uint8 red, Uint8 green, Uint8 blue);
+    void PaintRow(int y, int x1, int x2, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
 
-    void PaintColumn(int column, int start, int end, Uint8 red, Uint8 green, Uint8 blue);
+    void PaintColumn(int x, int y1, int y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
+
+    void PaintLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
 
     void LinesGettingSmaller(int num_lines);
 
@@ -54,9 +56,17 @@ public:
 
     void BlackScreen();
 
-    void Rect(int left_cornerX, int left_cornerY, int width, int height, Uint8 red, Uint8 green, Uint8 blue);
+    void Rect(int left_cornerX, int left_cornerY, int width, int height, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
 
     void Stars(uint num_stars);
+
+    float PlotFunc(float x);
+
+    void Plot();
+
+    bool PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
+
+    bool fPaintPixel(float x, float y, Uint8 red, Uint8 green, Uint8 blue);
 
 };
 

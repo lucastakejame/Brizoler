@@ -2,11 +2,18 @@
 using namespace std;
 #include <stdio.h>
 #include <math.h>
+#include <vector>
 #include "Brizoler.h"
 #include "Star.h"
 // #include "sin.h"
 
 // #define zoom_limit 2
+
+
+#define RED_FROM_PIXEL(pix)   (pix & 00110000) >> 16
+#define GREEN_FROM_PIXEL(pix) (pix & 00001100) >> 8
+#define BLUE_FROM_PIXEL(pix)  (pix & 00000011)
+
 static int zoom_limit = 20;
 static int speed_limit = 20;
 
@@ -17,13 +24,23 @@ float param_speed = 1;
 int mode = 2;
 
 
+Brizoler::Brizoler()
+{
+    this->Running = true;
+}
 
-int Brizoler::OnExecute() {
+Brizoler::~Brizoler()
+{
+}
+
+int Brizoler::OnExecute()
+{
 
     // printf("Insira um limite de zoom e velocidade: ");
     // scanf("%i %i", &zoom_limit, &speed_limit);
 
-    if(OnInit() == false) {
+    if(OnInit() == false)
+    {
 
         return -1;
     }
@@ -33,8 +50,10 @@ int Brizoler::OnExecute() {
     int offsetx = 30;
     int offsety = 0;
 
-    while(Running) {
-        while(SDL_PollEvent(&Event)) {
+    while(Running)
+    {
+        while(SDL_PollEvent(&Event))
+        {
             OnEvent(&Event);
         }
 
@@ -50,34 +69,33 @@ int Brizoler::OnExecute() {
     return 0;
 }
 
-Brizoler::Brizoler()
-{
-    this->Running = true;
-}
-Brizoler::~Brizoler(){}
-
 bool Brizoler::OnInit()
 {
 
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
+    {
         return false;
     }
 
-    if((this->surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
-                                    0, /*height, 0 means any height*/
+    if((this->surf = SDL_SetVideoMode(1600, /*width , 0 means any width*/
+                                    700, /*height, 0 means any height*/
                                     0, /*bites per pixel, 0 means use current*/
-                                    SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE | SDL_FULLSCREEN
+                                    SDL_SWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+                                    // | SDL_FULLSCREEN
                                     )
                                     ) == NULL &&
         (this->canvas_surf = SDL_SetVideoMode(0, /*width , 0 means any width*/
                                         0, /*height, 0 means any height*/
                                         0, /*bites per pixel, 0 means use current*/
-                                        SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
+                                        SDL_SWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE
                                         )
                                         ) == NULL)
     {
         return false;
     }
+
+    cout << "surf->w: " <<  surf->w << endl;
+    cout << "surf->h: " <<  surf->h << endl;
 
     uint canvas_size = this->surf->h*this->surf->w*3;
 
@@ -89,12 +107,13 @@ bool Brizoler::OnInit()
 
     SDL_EnableKeyRepeat(1, 10);
 
-    SDL_ShowCursor(SDL_DISABLE);
+    // SDL_ShowCursor(SDL_DISABLE);
 
     return true;
 }
 
-void Brizoler::OnCleanup() {
+void Brizoler::OnCleanup()
+{
     free(canvas);
     SDL_FreeSurface(surf);
     SDL_Quit();
@@ -124,7 +143,6 @@ void Brizoler::OnMouseMove(int mX, int mY, int relX, int relY, bool Left,bool Ri
     }
 }
 
-
 void Brizoler::OnLButtonDown(int mX, int mY)
 {
     param_zoom = ((float)mY/surf->h)*zoom_limit + 0.01;
@@ -141,7 +159,8 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
     {
         case SDLK_UP:
         {
-            if(param_zoom < zoom_limit){
+            if(param_zoom < zoom_limit)
+            {
                 param_zoom += 0.005;
             }
         }
@@ -149,7 +168,8 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
 
         case SDLK_DOWN:
         {
-            if(param_zoom > 0.015){
+            if(param_zoom > 0.015)
+            {
                 param_zoom -= 0.005;
             }
         }
@@ -157,7 +177,8 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
 
         case SDLK_RIGHT:
         {
-            if(param_speed < speed_limit){
+            if(param_speed < speed_limit)
+            {
                 param_speed += 0.01;
             }
         }
@@ -165,7 +186,8 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
 
         case SDLK_LEFT:
         {
-            if(param_speed > 0.015){
+            if(param_speed > 0.015)
+            {
                 param_speed -= 0.01;
             }
         }
@@ -207,6 +229,11 @@ void Brizoler::OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode)
             mode = 6;
         }break;
 
+        case SDLK_7:
+        {
+            mode = 7;
+        }break;
+
         case SDLK_c:
         {
             stars_change_direction_flag = 1;
@@ -223,8 +250,10 @@ void Brizoler::OnKeyUp(SDLKey sym, SDLMod mod, Uint16 unicode)
 
 void Brizoler::OnResize(int w,int h)
 {
-    surf = SDL_SetVideoMode(w, h, 0, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
-    if(NULL == surf) {
+    surf = SDL_SetVideoMode(w, h, 0, SDL_SWSURFACE | SDL_DOUBLEBUF | SDL_RESIZABLE);
+
+    if(NULL == surf)
+    {
         fprintf(stderr, "Unable to resize video mode: %s\n", SDL_GetError());
         exit(2);
     }
@@ -235,88 +264,157 @@ void Brizoler::OnExit()
     Running = false;
 }
 
-int FunctionPoint(int x)
+bool Brizoler::fPaintPixel(float x, float y, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int y;
 
-    y = x*(float)param_zoom/800;
-
-    return y;
-}
-
-void Brizoler::PaintLine(int line, int start, int end, Uint8 red, Uint8 green, Uint8 blue)
-{
+    // normalizing color intensity;
+    float f_red = (float)red/255;
+    float f_green = (float)green/255;
+    float f_blue = (float)blue/255;
 
     Uint32 *pixel = (Uint32*)surf->pixels;
-
-    int current_line;
-
-    if(end > surf->w)
-        end = surf->w - 1;
-
-    // goes to desired start point
-    int offset = line*surf->w + start;
-    int limit = surf->w*surf->h;
+    uint index;
 
 
-    for (int j = 0; j < end-start; ++j)
+    for (int i = (int)x-1; i < (int)x+2; ++i)
     {
-        int index = offset + j;
-        if(index > limit)
+        for (int j = (int)y-1; j < (int)y+2; ++j)
         {
-            index = limit;
+            if(i > 0 && i < surf->w && j > 0 && j < surf->h)
+            {
+                index = j*surf->w + i;
+
+                // float f_pix_red = RED_FROM_PIXEL(pixel[index])/255;
+                // float f_pix_green = GREEN_FROM_PIXEL(pixel[index])/255;
+                // float f_pix_blue = BLUE_FROM_PIXEL(pixel[index])/255;
+
+                float dist;
+                if((int) x == i)
+                    dist = 4;
+                else
+                    dist = 3.75;
+
+                const float max_dist = 4;
+                // float dist = 1+sqrt((pow(x-(i+0.5),2) + pow(j-(y+0.5),2))/2);
+                // const float max_dist = (1.5*sqrt(2));
+
+                float new_red = sqrt(((dist)*pow(f_red,2))/max_dist);
+                float new_green = sqrt(((dist)*pow(f_green,2))/max_dist);
+                float new_blue = sqrt(((dist)*pow(f_blue,2))/max_dist);
+
+                // float new_red = sqrt(((max_dist-dist)*pow(f_pix_red,2) + (dist)*pow(f_red,2))/max_dist);
+                // float new_green = sqrt(((max_dist-dist)*pow(f_pix_green,2) + (dist)*pow(f_green,2))/max_dist);
+                // float new_blue = sqrt(((max_dist-dist)*pow(f_pix_blue,2) + (dist)*pow(f_blue,2))/max_dist);
+
+                pixel[index] = SDL_MapRGB(surf->format, new_red*255, new_green*255, new_blue*255);
+                // pixel[index] = SDL_MapRGB(surf->format, red, green, blue);
+                return true;
+            }
         }
+    }
+
+
+    return false;
+}
+
+bool Brizoler::PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue)
+{
+    Uint32 *pixel = (Uint32*)surf->pixels;
+
+
+    uint index;
+
+    if(x >= 0 && x < surf->w && y >= 0 && y < surf->h)
+    {
+        index = y*surf->w + x;
         pixel[index] = SDL_MapRGB(surf->format, red, green, blue);
+        return true;
+    }
+    return false;
+}
+
+void Brizoler::PaintRow(int y, int x1, int x2, uint thickness, Uint8 red, Uint8 green, Uint8 blue)
+{
+    Uint32 *pixel = (Uint32*)surf->pixels;
+
+    for(int y_counter = y; y_counter < y+thickness; y_counter++)
+    {
+        for (int x_counter = 0; x_counter < x2-x1; ++x_counter)
+        {
+            PaintPixel(x_counter+x1, y_counter-thickness/2, red, green, blue);
+        }
     }
 }
 
-void Brizoler::PaintColumn(int column, int start, int end, Uint8 red, Uint8 green, Uint8 blue)
+void Brizoler::PaintColumn(int x, int y1, int y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue)
 {
     Uint32 *pixel = (Uint32*)surf->pixels;
 
-    int current_column;
-
-    if(end > surf->h)
-        end = surf->h - 1;
-
-    int limit = surf->w*surf->h;
-
-    // goes to desired start point
-    int offset = surf->w*start + column;
-
-    for (int j = 0; j < end-start; ++j)
+    for(int x_counter = x; x_counter < x+thickness; x_counter++)
     {
-        int index = offset + j*surf->w;
-        if(index > limit)
+        for (int y_counter = 0; y_counter < y2-y1; ++y_counter)
         {
-            index = limit;
+            PaintPixel(x_counter-thickness/2, y_counter+y1, red, green, blue);
         }
-
-        pixel[index] = SDL_MapRGB(surf->format, red, green, blue);
     }
 }
 
-void Brizoler::Rect(int left_cornerX, int left_cornerY, int width, int height, Uint8 red, Uint8 green, Uint8 blue)
+
+void Brizoler::PaintLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue)
 {
-    PaintLine(left_cornerY, left_cornerX, left_cornerX + width, red, green, blue);            //  -----
-    PaintColumn(left_cornerX + width, left_cornerY, left_cornerY + height, red, green, blue); //       |
-    PaintLine(left_cornerY + height, left_cornerX, left_cornerX + width, red, green, blue);   //  ______
-    PaintColumn(left_cornerX, left_cornerY, left_cornerY + height, red, green, blue);         // |
+    // fprintf(stderr, "P1(%.2f , %.2f) -> P2(%.2f , %.2f)\n", x1, y1, x2, y2);
+    float x,y,dx,dy;
+    int xi,yi;
+
+    dx = (x2-x1);
+    dy = (y2-y1);
+
+    if(fabsf(dx) > fabsf(dy))
+    {
+        dy = dy/(fabsf(dx));
+        dx = dx/(fabsf(dx));
+    }
+    else
+    {
+        dx = dx/(fabsf(dy));
+        dy = dy/(fabsf(dy));
+    }
+
+    x = x1;
+    y = y1;
+    xi = (int)x1;
+    yi = (int)y1;
+
+    int count_pri = 0;
+
+    while((x-x2)*dx < 0 && (y-y2)*dy < 0)
+    {
+        if(yi >= 0 && yi < surf->h && xi >= 0 && xi < surf->w)
+            PaintPixel(xi, yi, red, green, blue);
+        x += dx;
+        y += dy;
+        xi = (int)(x + 0.5);
+        yi = (int)(y + 0.5);
+    }
+    if(y2 >= 0 && y2 < surf->h && x2 >= 0 && x2 < surf->w)
+        PaintPixel(x2, y2, red, green, blue);
+}
+
+void Brizoler::Rect(int left_cornerX, int left_cornerY, int width, int height, uint thickness, Uint8 red, Uint8 green, Uint8 blue)
+{
+    PaintRow(left_cornerY, left_cornerX, left_cornerX + width, thickness, red, green, blue);            //  -----
+    PaintColumn(left_cornerX + width, left_cornerY, left_cornerY + height, thickness, red, green, blue); //       |
+    PaintRow(left_cornerY + height, left_cornerX, left_cornerX + width, thickness, red, green, blue);   //  ______
+    PaintColumn(left_cornerX, left_cornerY, left_cornerY + height, thickness, red, green, blue);         // |
 }
 
 void Brizoler::BlackScreen()
 {
-
-    Uint32 *pixel;
-    pixel = (Uint32*)surf->pixels;
-
-
-    for (int i = 0; i < surf->h; ++i)
+    for (int y = 0; y < surf->h; ++y)
     {
-        for (int j = 0; j < surf->w; ++j)
+        for (int x = 0; x < surf->w; ++x)
         {
-            *pixel = SDL_MapRGB(surf->format, 0, 0, 0);
-            pixel++;
+            PaintPixel(x, y, 0, 0, 0);
         }
     }
 }
@@ -340,8 +438,8 @@ void Brizoler::LinesGettingSmaller(int num_lines)
                   current_line_width > 0 &&
                   space_between_lines > 1; i++ )
     {
-        PaintLine(current_line_height, (int)(i*width_delta1), surf->w - (int)(i*width_delta2), 255, 255, 255);
-        PaintColumn((int)(i*width_delta1), current_line_height, surf->h - (int)(i*height_delta2), 255, 255, 255);
+        PaintRow(current_line_height, (int)(i*width_delta1), surf->w - (int)(i*width_delta2), 1, 255, 255, 255);
+        PaintColumn((int)(i*width_delta1), current_line_height, surf->h - (int)(i*height_delta2), 1, 255, 255, 255);
 
         current_line_height += (int) space_between_lines;
     }
@@ -350,28 +448,36 @@ void Brizoler::LinesGettingSmaller(int num_lines)
 
 void Brizoler::InfiniteSquares(int num_squares)
 {
+    static float offset = 0;
     static Uint8 red_offset = 0;
     static Uint8 green_offset = 0;
     static Uint8 blue_offset = 0;
-
-    red_offset += 2;
-    green_offset += 3;
-    blue_offset += 5;
-
 
     float horizontal_step = ((float) mouse_x)/num_squares; // distance between squares
     float vertical_step = ((float) mouse_y)/num_squares;
     float width_decrease_step = ((float) surf->w)/num_squares; // square lines decreasing rate
     float height_decrease_step = ((float) surf->h)/num_squares;
 
-    int square_x = 0;
-    int square_y = 0;
-    int square_width = surf->w;
-    int square_height = surf->h;
+    float square_x = 0;
+    float square_y = 0;
+    float square_width = surf->w;
+    float square_height = surf->h;
+
+    const int amplitude = 20;
+    float thickness = amplitude;
+    // float thickness = amplitude * sin( (float)i/num_squares*2*M_PI + offset) + amplitude+1;
+
+    const float thickness_step = (float)(amplitude)/num_squares;
+    float far = 0;
 
     for(int i = 0; i < num_squares; i++)
     {
-        Rect(square_x, square_y, square_width, square_height, ((Uint8)red_offset*i), ((Uint8)green_offset*i), ((Uint8)blue_offset*i));
+        red_offset += 1;
+        green_offset += 2;
+        blue_offset += 3;
+        far += thickness_step;
+
+        Rect(square_x, square_y, square_width, square_height, (int)2, ((Uint8)red_offset*green_offset), ((Uint8)green_offset*blue_offset), ((Uint8)blue_offset*red_offset));
 
         square_x += horizontal_step ;
         square_y += vertical_step ;
@@ -379,6 +485,7 @@ void Brizoler::InfiniteSquares(int num_squares)
         square_height -=  height_decrease_step;
     }
 
+    offset += 0.1;
 }
 
 void Brizoler::Stars(uint num_stars)
@@ -389,7 +496,6 @@ void Brizoler::Stars(uint num_stars)
 
     if(!stars)
     {
-
         stars = (Star**) malloc(num_stars*(sizeof(Star*)));
         for(uint k = 0; k < num_stars; k++)
         {
@@ -398,37 +504,132 @@ void Brizoler::Stars(uint num_stars)
             stars[k]->Set_Color(random()%256, random()%256, random()%256);
         }
     }
+    static int count = 1;
+    static int count2 = 50;
 
     for(uint i = 0; i < num_stars; i++)
     {
         stars[i]->Animate(this->mouse_x, this->mouse_y, 10, 11);
 
-        if(stars_change_direction_flag)
+
+        if(count % count2 == 0)
+        // if(stars_change_direction_flag)
         {
             stars[i]->Change_Direction();
         }
-
-        // uint index = stars[i]->pos_y*surf->w + stars[i]->pos_x;
-
-        // uint limit = surf->w*surf->h;
-
-        // if(index > limit)
-        // {
-        //     index = (index%limit + (this->mouse_y)*surf->w + this->mouse_x)%limit;
-        // }
-
-        // writing_pixel = (Uint32*) surf->pixels;
-        // writing_pixel += index;
-
-        // *writing_pixel = SDL_MapRGB(surf->format, stars[i]->red, stars[i]->green, stars[i]->blue);
+        count2 = (int) 50 + 25*sin(count);
     }
-    stars_change_direction_flag = 0;
+        count++;
+    // stars_change_direction_flag = 0;
+}
 
+float Brizoler::PlotFunc(float x)
+{
+    static float offset = 0;
+    static float inc = 0.001;
+    static float persist_inc = 0;
+
+    offset += inc;
+    float inc_limit = 100*inc;
+
+    if(inc > 0)
+    {
+        if(persist_inc <= inc_limit)
+            persist_inc += inc;
+        else
+            inc = -inc;
+    }
+    else
+    {
+        if(persist_inc >= 0)
+            persist_inc += inc;
+        else
+            inc = -inc;
+    }
+
+    float param_x = 2*param_speed/speed_limit;
+    float param_y = -0.5 + param_zoom/zoom_limit;
+
+    const int amplitude = 300;
+    const int max_freq = 200;
+
+    // return (param_x)*x*x + -(surf->h/2)+(surf->h)*(param_y);
+    return amplitude*sin(param_x*max_freq*(x/surf->w)*2*M_PI+ offset) + (param_y*(surf->h-amplitude*2));
+    // return amplitude*tan(param_x*max_freq*(x/surf->w)*2*M_PI+ offset) + (param_y*(surf->h-amplitude*2));
+    // return 400*(param_y)*sin((x/surf->w)*2*M_PI*100*(param_x));
+}
+
+void Brizoler::Plot() // in the form of y = 3x + 4
+{
+
+    static bool ploted = false;
+
+    static float inc = 0.01;
+    static float persist_inc = 0;
+    float inc_limit = 100*inc;
+
+    if(inc > 0)
+    {
+        if(persist_inc <= inc_limit)
+            persist_inc += inc;
+        else
+            inc = -inc;
+    }
+    else
+    {
+        if(persist_inc >= -1)
+            persist_inc += inc;
+        else
+            inc = -inc;
+    }
+
+    BlackScreen();
+
+    vector<float> func_x;
+    vector<float> func_y;
+    vector<float>::iterator it_x;
+    vector<float>::iterator it_y;
+
+    float zero_x = (float)surf->w/2;
+    float zero_y = (float)surf->h/2;
+    float cart_y_min = (float)-surf->h/2;
+    float cart_y_max = (float)surf->h/2;
+
+    PaintRow(zero_y, 0, surf->w, 1, 125, 125, 125);
+    PaintColumn(zero_x, 0, surf->h, 1, 125, 125, 125);
+
+    for (int x = 0; x < surf->w; x++)
+    {
+        float cart_x = -zero_x+x;
+        float cart_y = PlotFunc(cart_x);
+
+        if(cart_y <= cart_y_max && cart_y >= cart_y_min)
+        {
+            func_x.push_back(x);
+            func_y.push_back(zero_y - cart_y);
+        }
+
+    }
+
+    for(it_x = func_x.begin(), it_y = func_y.begin();
+        it_x != func_x.end()-1, it_y != func_y.end()-1;
+        it_x++, it_y++)
+    {
+        if(*(it_x+1) == *(it_x) +1)
+        {
+            // PaintLine(*it_x, *it_y, *(it_x+1), *(it_y+1), 1, 255, 255, 255);
+            PaintLine(*it_x, *it_y, *(it_x+1), *(it_y+1), 1, sin(*it_x)*255, cos(*it_x)*255, tan(*it_x)*255);
+            // PaintLine(*it_x, *it_y, *(it_x+1), *(it_y+1), 1, ((sin(persist_inc*M_PI)+1)/2)*255, (*it_y)*255, (*it_x * *it_y)*255);
+        }
+    }
+    ploted = true;
+    return;
 }
 
 void Brizoler::OnPaint(int OffsetX, int OffsetY)
 {
-    if(SDL_MUSTLOCK(surf)) {
+    if(SDL_MUSTLOCK(surf))
+    {
         SDL_LockSurface(surf);
     }
 
@@ -441,7 +642,6 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
     pixel = (Uint32*)surf->pixels;
 
 
-    int old_func_x = FunctionPoint(0);
 
             // float i_norm = (float) i/surf->h;
             // float j_norm = (float) j/surf->w;
@@ -462,9 +662,11 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                     green = (prod + (int)(param_speed*OffsetY))%256;
                     blue = (prod)%256;
 
+                    PaintPixel(j,i, red, green ,blue);
 
-                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
-                    pixel++;
+
+                    // *pixel = SDL_MapRGB(surf->format, red, green, blue);
+                    // pixel++;
                 }
             }
 
@@ -478,7 +680,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                 for (int j = 0; j < surf->w; ++j)
                 {
 
-                    prod = (int)((i*(j+OffsetY))*param_zoom);
+                    prod = (int)(i*j*param_zoom);
                     red = (prod + OffsetX)%256;
                     green = (prod + (int)(param_speed*OffsetY))%256;
                     blue = (prod)%256;
@@ -499,9 +701,13 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
                 {
 
                     if(i%2 != 0)
-                        prod = (int)((i*i*i + j*j*j)*param_zoom);
+                        // prod = (int)(sin((j/surf->w)*(i/surf->h) * 2 * M_PI + 40 )*param_zoom);
+                        // prod = (int)((i*i + j*j)*param_zoom);
+                        prod = (int)(256*sin(i)*param_zoom);
                     else
-                        prod = (int)((i*(j+0))*param_zoom);
+                        // prod = (int)(log((surf->h*surf->w - i*j) +1)*param_zoom*100);
+                        prod = (int)(256*cos(j)*param_zoom);
+                        // prod = (int)(i*j*param_zoom);
                     red = (prod + OffsetX)%256;
                     green = (prod + (int)(param_speed*OffsetY))%256;
                     blue = (prod)%256;
@@ -515,32 +721,12 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         }break;
         case 4:
         {
-
-            for (int i = 0; i < surf->h; ++i)
-            {
-                for (int j = 0; j < surf->w; ++j)
-                {
-
-                    int func_x = FunctionPoint(i);
-                    if(j == func_x)
-                        prod = 1;
-                    else
-                        prod = 0;
-
-                    red = prod * 255;
-                    green = prod * 255;
-                    blue = prod * 255;
-
-                    *pixel = SDL_MapRGB(surf->format, red, green, blue);
-                    pixel++;
-                }
-            }
-
+            Plot();
 
         }break;
         case 5:
         {
-            static int num = 50;
+            static int num = 30;
             static int sin_phase = 0;
             static int change_counter = 0;
 
@@ -566,9 +752,7 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
 
         case 6:
         {
-            static int num = 999;
-
-            // BlackScreen();
+            static int num = 10000;
             Stars(num);
 
         }break;
@@ -587,4 +771,6 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
         SDL_UnlockSurface(surf);
     }
     SDL_UpdateRect(surf, 0, 0, surf->w, surf->h);
+
+    SDL_Delay(5);
 }

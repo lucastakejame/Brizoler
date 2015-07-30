@@ -24,7 +24,6 @@ Star::~Star(){}
 
 void Star::Fade(uint mouse_x, uint mouse_y)
 {
-
     Canvas_Paint(last_pos_x-1, last_pos_y-1, 0, 0, 0);
     Canvas_Paint(last_pos_x, last_pos_y-1, 0, 0, 0);
     Canvas_Paint(last_pos_x+1, last_pos_y-1, 0, 0, 0);
@@ -46,6 +45,7 @@ void Star::Shine(uint mouse_x, uint mouse_y, Uint8 red, Uint8 green, Uint8 blue)
     Canvas_Paint(pos_x+1, pos_y-1, red, green, blue);
 
     Canvas_Paint(pos_x-1, pos_y, 255, green, 255);
+    // Canvas_Paint(pos_x, pos_y, red, green, blue);
     Canvas_Paint(pos_x, pos_y, 255, 255, 255);
     Canvas_Paint(pos_x+1, pos_y, 255, 255, blue);
 
@@ -56,6 +56,7 @@ void Star::Shine(uint mouse_x, uint mouse_y, Uint8 red, Uint8 green, Uint8 blue)
 
 void Star::Animate(uint mouse_x, uint mouse_y, uint offsetx, uint offsety)
 {
+
     Shine(mouse_x, mouse_y, red, green, blue);
     // Fade(mouse_x, mouse_y);
     Move(mouse_x, mouse_y);
@@ -74,8 +75,10 @@ void Star::Move(uint mouse_x, uint mouse_y)
     pos_x += vel_x;
     pos_y += vel_y;
 
-    if(pos_x > canvas_width || pos_y > canvas_height || pos_y*(canvas_width) + pos_x >= canvas_limit)
+    if( pos_x < 0 || pos_x > canvas_width-1 || pos_y < 0 || pos_y > canvas_height-1 )
     {
+        static int count = 0;
+
         pos_x = mouse_x;
         pos_y = mouse_y;
         Reset_vel();
@@ -84,8 +87,10 @@ void Star::Move(uint mouse_x, uint mouse_y)
 
 void Star::Reset_vel()
 {
-    vel_x = float(random()%30)/20;
-    vel_y = float(random()%30)/20;
+    vel_x = float(random()%30)/10;
+    vel_y = float(random()%30)/10;
+    // vel_x = float(random()%30)/20;
+    // vel_y = float(random()%30)/20;
 
     dir_x = random()%2;
     dir_y = random()%2;
