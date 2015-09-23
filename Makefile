@@ -5,6 +5,7 @@ DEGUB = -g
 
 CFLAGS = -Wall -Wextra -Wpointer-arith -Wredundant-decls
 CFLAGS += -Wcast-align -Wcast-qual
+CFLAGS += -std=c++11
 CFLAGS += $(DEBUG)
 
 LDFLAGS = -lSDLmain -lSDL

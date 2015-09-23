@@ -3,24 +3,25 @@
 
 #include <SDL/SDL.h>
 #include "CEvent.h"
+#include "stdio.h"
+#include "math.h"
 
 struct Star
 {
-    float pos_x;
-    float pos_y;
-
-    float last_pos_x;
-    float last_pos_y;
 
     uint *canvas;
     uint canvas_width;
     uint canvas_height; // Canvas considering only (x,y) position, no pixel size
     uint canvas_limit;
 
+    int size;
+    float pos_x;
+    float pos_y;
+    float last_pos_x;
+    float last_pos_y;
+
     float vel_x;
     float vel_y;
-    char dir_x;
-    char dir_y;
 
     float accel_x;
     float accel_y;
@@ -39,11 +40,17 @@ struct Star
     void Move(uint mouse_x, uint mouse_y);
 
     void Reset_vel();
+    void Multiply_vel(float factor);
     void Set_Color(Uint8 red, Uint8 green, Uint8 blue);
 
     void Canvas_Paint(uint x, uint y, Uint8 red, Uint8 green, Uint8 blue);
 
     void Change_Direction();
+
+    void Change_Acceleration(float a_x, float a_y);
+
+    void Add_Acceleration(float a_x, float a_y);
+
 
 };
 

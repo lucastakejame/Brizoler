@@ -62,9 +62,15 @@ public:
 
     void Stars(uint num_stars);
 
-    float PlotFunc(float x);
+    float CalculateFunc(float x);
+
+    float CalculatePolarFunc(float angle);
 
     void Plot();
+
+    void PolarPlot();
+
+    bool IsInsideCanvas(float x, float y);
 
     bool PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 
