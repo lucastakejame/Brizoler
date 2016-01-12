@@ -46,18 +46,67 @@ void Star::Shine(uint mouse_x, uint mouse_y, Uint8 red, Uint8 green, Uint8 blue)
     if(1)
     // if(size == 1)
     {
-        Canvas_Paint(pos_x-1, pos_y-1, red, green, blue);
-        Canvas_Paint(pos_x, pos_y-1, red, 255, 255);
-        Canvas_Paint(pos_x+1, pos_y-1, red, green, blue);
+        float dx = (pos_x - last_pos_x);
+        float dy = (pos_y - last_pos_y);
 
-        Canvas_Paint(pos_x-1, pos_y, 255, green, 255);
-        // Canvas_Paint(pos_x, pos_y, red, green, blue);
-        Canvas_Paint(pos_x, pos_y, 255, 255, 255);
-        Canvas_Paint(pos_x+1, pos_y, 255, 255, blue);
+        if( isnormal(dx) && isnormal(dy))
+        {
+            float module = sqrt(dx*dx+dy*dy);
+            dx /= module;
+            dy /= module;
 
-        Canvas_Paint(pos_x-1, pos_y+1, red, green, blue);
-        Canvas_Paint(pos_x, pos_y+1, 255, 255, 255);
-        Canvas_Paint(pos_x+1, pos_y+1, red, green, blue);
+        }
+        else if(dx == 0 && dy != 0)
+        {
+            dy /= fabs(dy);
+        }
+        else if(dx != 0 && dy == 0)
+        {
+            dx /= fabs(dx);
+        }
+
+        if(pos_x != last_pos_x && pos_y != last_pos_y)
+        {
+            int count = 0;
+            for (float i = last_pos_x, j = last_pos_y;
+            (dx != 0 && dy != 0)
+            && (((pos_x - i)*dx >= 0)
+            && ((pos_y - j)*dy >= 0))
+            // && count < 100
+            ;
+            i += dx, j += dy, ++count)
+            {
+                Canvas_Paint(i-1, j-1, red, green, blue);
+                Canvas_Paint(i, j-1, red, 255, 255);
+                Canvas_Paint(i+1, j-1, red, green, blue);
+
+                Canvas_Paint(i-1, j, 255, green, 255);
+                // Canvas_Paint(i, j, red, green, blue);
+                Canvas_Paint(i, j, 255, 255, 255);
+                Canvas_Paint(i+1, j, 255, 255, blue);
+
+                Canvas_Paint(i-1, j+1, red, green, blue);
+                Canvas_Paint(i, j+1, 255, 255, 255);
+                Canvas_Paint(i+1, j+1, red, green, blue);
+            }
+        }
+        else
+        {
+            Canvas_Paint(pos_x-1, pos_y-1, red, green, blue);
+            Canvas_Paint(pos_x, pos_y-1, red, 255, 255);
+            Canvas_Paint(pos_x+1, pos_y-1, red, green, blue);
+
+            Canvas_Paint(pos_x-1, pos_y, 255, green, 255);
+            // Canvas_Paint(pos_x, pos_y, red, green, blue);
+            Canvas_Paint(pos_x, pos_y, 255, 255, 255);
+            Canvas_Paint(pos_x+1, pos_y, 255, 255, blue);
+
+            Canvas_Paint(pos_x-1, pos_y+1, red, green, blue);
+            Canvas_Paint(pos_x, pos_y+1, 255, 255, 255);
+            Canvas_Paint(pos_x+1, pos_y+1, red, green, blue);
+
+        }
+
     }
     else
     {
@@ -68,12 +117,12 @@ void Star::Shine(uint mouse_x, uint mouse_y, Uint8 red, Uint8 green, Uint8 blue)
             for (int i = 0; i < draw_size; ++i)
             {
                 if((i == j)
-                    || (i == draw_size-j))
+                || (i == draw_size-j))
                 {
                     Canvas_Paint(pos_x - (draw_size/2) + i, pos_y - (draw_size/2) + j, 255, 255, 255);
                 }
                 else if(((i < draw_size/2) && (j < draw_size/2))
-                        || ((i > draw_size/2) && (j > draw_size/2)))
+                || ((i > draw_size/2) && (j > draw_size/2)))
                 {
                     Canvas_Paint(pos_x - (draw_size/2) + i, pos_y - (draw_size/2) + j, red / (0.3*fabs(i-j)), green / (0.3*fabs(i-j)), blue / (0.3*fabs(i-j)));
                 }
@@ -102,12 +151,14 @@ void Star::Animate(uint mouse_x, uint mouse_y, uint offsetx, uint offsety)
 void Star::Move(uint mouse_x, uint mouse_y)
 {
 
-    bool bounce = false;
+    bool bounce = true;
+    float dumping = 0.59;
 
-    vel_x += accel_x;
-    vel_y += accel_y;
+    vel_x += accel_x*dumping;
+    vel_y += accel_y*dumping;
 
-    if(pos_x == pos_x)
+    if((isnormal(pos_x) || pos_x == 0)
+    && (isnormal(pos_y) || pos_y == 0))
     {
         last_pos_x = pos_x;
         last_pos_y = pos_y;
@@ -121,42 +172,57 @@ void Star::Move(uint mouse_x, uint mouse_y)
         fprintf(stderr, "pos:\t(%2.2f, %2.2f)\n", pos_x, pos_y);
         fprintf(stderr, "vel:\t(%2.2f, %2.2f)\n", vel_x, vel_y);
         fprintf(stderr, "accel:\t(%2.2f, %2.2f)\n", accel_x, accel_y);
+
+        cin.get();
     }
+
+    float unseen_canvas_x = canvas_width;
+    float unseen_canvas_y = canvas_height;
+    float x_limit0 = 0 - unseen_canvas_x;
+    float x_limit1 = canvas_width-1 + unseen_canvas_x;
+    float y_limit0 = 0 - unseen_canvas_y;
+    float y_limit1 = canvas_height-1 + unseen_canvas_y;
 
     if(bounce)
     {
-        if(pos_x < 0)
-            vel_x = fabs(vel_x);
-        else if(pos_x > canvas_width-1)
-            vel_x = -fabs(vel_x);
+        if(pos_x < x_limit0)
+            vel_x = fabs(vel_x)*dumping;
+        else if(pos_x > x_limit1)
+            vel_x = -fabs(vel_x)*dumping;
 
-        if(pos_y < 0)
-            vel_y = fabs(vel_y);
-        else if(pos_y > canvas_height-1)
-            vel_y = -fabs(vel_y);
+        if(pos_y < y_limit0)
+            vel_y = fabs(vel_y)*dumping;
+        else if(pos_y > y_limit1)
+            vel_y = -fabs(vel_y)*dumping;
     }
-    else if( (pos_x < 0)
-            || (pos_x > canvas_width-1)
-            || (pos_y < 0)
-            || (pos_y > canvas_height-1) )
+    else if( (pos_x < x_limit0)
+    || (pos_x > x_limit1)
+    || (pos_y < y_limit0)
+    || (pos_y > y_limit1) )
     {
+        static int wait_last_shine = 0;
+        wait_last_shine++;
 
-        if((0 <= mouse_x)
-            && (mouse_x < canvas_width)
-            && (0 <= mouse_y)
-            && (mouse_y < canvas_height))
+        // if(0)
+        if(wait_last_shine == 30)
         {
-            pos_x = (int)mouse_x;
-            pos_y = (int)mouse_y;
+            if((0 <= mouse_x)
+                && (mouse_x < canvas_width)
+                && (0 <= mouse_y)
+                && (mouse_y < canvas_height))
+            {
+                last_pos_x = pos_x = (int)mouse_x;
+                last_pos_y = pos_y = (int)mouse_y;
+            }
+            else
+            {
+                pos_x = canvas_width/2;
+                pos_y = canvas_height/2;
+            }
+            Reset_vel();
 
-
+            wait_last_shine = 0;
         }
-        else
-        {
-            pos_x = canvas_width/2;
-            pos_y = canvas_height/2;
-        }
-        Reset_vel();
     }
 
 }

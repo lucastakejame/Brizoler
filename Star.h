@@ -2,9 +2,12 @@
 #define _STAR_H_
 
 #include <SDL/SDL.h>
+#include <iostream>
 #include "CEvent.h"
 #include "stdio.h"
 #include "math.h"
+
+using namespace std;
 
 struct Star
 {

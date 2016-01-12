@@ -4,6 +4,9 @@
 #include <SDL/SDL.h>
 #include "CEvent.h"
 
+#define SCREEN_WIDTH 500
+#define SCREEN_HEIGHT 500
+
 class Brizoler: public CEvent
 {
 public:
@@ -73,6 +76,8 @@ public:
     bool IsInsideCanvas(float x, float y);
 
     bool PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
+
+    bool PaintPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue, SDL_Surface* other_surf);
 
     bool fPaintPixel(float x, float y, Uint8 red, Uint8 green, Uint8 blue);
 
