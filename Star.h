@@ -1,7 +1,7 @@
 #ifndef _STAR_H_
 #define _STAR_H_
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <iostream>
 #include "CEvent.h"
 #include "stdio.h"

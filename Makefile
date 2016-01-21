@@ -8,7 +8,7 @@ CFLAGS += -Wcast-align -Wcast-qual
 CFLAGS += -std=c++11
 CFLAGS += $(DEBUG)
 
-LDFLAGS = -lSDLmain -lSDL
+LDFLAGS = -lSDL2main -lSDL2
 
 EXEC = brizoler.bin
 

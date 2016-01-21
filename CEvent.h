@@ -1,7 +1,7 @@
 #ifndef _CEVENT_H_
 #define _CEVENT_H_
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 class CEvent {
 public:
@@ -15,9 +15,9 @@ public:
 
     virtual void OnInputBlur();
 
-    virtual void OnKeyDown(SDLKey sym, SDLMod mod, Uint16 unicode);
+    virtual void OnKeyDown(SDL_Keycode sym, Uint16 mod);
 
-    virtual void OnKeyUp(SDLKey sym, SDLMod mod, Uint16 unicode);
+    virtual void OnKeyUp(SDL_Keycode sym, Uint16 mod);
 
     virtual void OnMouseFocus();
 
