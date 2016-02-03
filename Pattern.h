@@ -12,6 +12,8 @@ public:
     float paramZoom;
     float paramSpeed;
 
+    int mode;
+
     Pattern();
     ~Pattern();
 

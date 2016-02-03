@@ -10,6 +10,7 @@
 #include "InputHandler.h"
 #include "Doodle.h"
 #include "Pattern.h"
+#include "Plotter.h"
 
 #define SCREEN_WIDTH 1500
 #define SCREEN_HEIGHT 800

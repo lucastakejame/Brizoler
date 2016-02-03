@@ -5,6 +5,17 @@
 #include <math.h>
 #include "utils.h"
 
+struct Point
+{
+    float x;
+    float y;
+
+    Point():x(0.0), y(0.0){}
+    Point(float x, float y):x(x), y(y){}
+
+};
+
+
 class Window
 {
 private:
@@ -27,9 +38,11 @@ public:
 
     bool ResizeCanvas(int w, int h);
 
+    void FillCanvas(Uint8 r, Uint8 g, Uint8 b);
+
     bool DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b);
 
-    void DrawLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue);
+    void DrawLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 r, Uint8 g, Uint8 b);
 
     void RefreshCanvas();
 

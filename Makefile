@@ -1,10 +1,11 @@
 CC = g++
 LD = g++
 
-DEGUB = -g
+# DEGUB = -g
 
 CFLAGS = -Wall -Wextra -Wpointer-arith -Wredundant-decls
 CFLAGS += -Wcast-align -Wcast-qual
+CFLAGS += -O3
 CFLAGS += -std=c++11
 CFLAGS += $(DEBUG)
 

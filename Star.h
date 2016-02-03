@@ -6,54 +6,36 @@
 #include "CEvent.h"
 #include "stdio.h"
 #include "math.h"
+#include "Window.h"
 
 using namespace std;
 
+#define SPRITE_SIZE 3
+
 struct Star
 {
+    SDL_Color sprite[SPRITE_SIZE][SPRITE_SIZE];
 
-    uint *canvas;
-    uint canvas_width;
-    uint canvas_height; // Canvas considering only (x,y) position, no pixel size
-    uint canvas_limit;
+    float pX;
+    float pY;
 
-    int size;
-    float pos_x;
-    float pos_y;
-    float last_pos_x;
-    float last_pos_y;
+    float lastpX;
+    float lastpY;
 
-    float vel_x;
-    float vel_y;
+    float velX;
+    float velY;
 
-    float accel_x;
-    float accel_y;
+    float accelX;
+    float accelY;
 
-    Uint8 red;
-    Uint8 green;
-    Uint8 blue;
+    float dumping;
 
-    Star(uint canvas_width, uint canvas_height, uint* canvas);
+    Star();
     ~Star();
 
+    void Move();
 
-    void Fade(uint mouse_x, uint mouse_y);
-    void Shine(uint mouse_x, uint mouse_y, Uint8 red, Uint8 green, Uint8 blue);
-    void Animate(uint mouse_x, uint mouse_y, uint offsetx, uint offsety);
-    void Move(uint mouse_x, uint mouse_y);
-
-    void Reset_vel();
-    void Multiply_vel(float factor);
-    void Set_Color(Uint8 red, Uint8 green, Uint8 blue);
-
-    void Canvas_Paint(uint x, uint y, Uint8 red, Uint8 green, Uint8 blue);
-
-    void Change_Direction();
-
-    void Change_Acceleration(float a_x, float a_y);
-
-    void Add_Acceleration(float a_x, float a_y);
-
+    void SetColor(Uint8 red, Uint8 green, Uint8 blue);
 
 };
 

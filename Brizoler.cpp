@@ -4,9 +4,11 @@
 #include <vector>
 #include <ctime>
 #include "Brizoler.h"
+#include "StarPaint.h"
+#include "utils.h"
 // #include "sin.h"
-
-void rotate_vector(float& x, float& y, float rad)
+/*
+void rotateVector(float& x, float& y, float rad)
 {
     float temp_x = x;
     float temp_y = y;
@@ -16,7 +18,7 @@ void rotate_vector(float& x, float& y, float rad)
     x = temp_x*cos_rad - temp_y*sin_rad;
     y = temp_x*sin_rad - temp_y*cos_rad;
 }
-void normalize_vector(float& x, float& y)
+void normalizeVector(float& x, float& y)
 {
     if( isnormal(x) && isnormal(y))
     {
@@ -34,16 +36,16 @@ void normalize_vector(float& x, float& y)
         x /= fabs(x);
     }
 }
+*/
+// struct Point
+// {
+//     float x;
+//     float y;
 
-struct Point
-{
-    float x;
-    float y;
+//     Point():x(0.0), y(0.0){}
+//     Point(float x, float y):x(x), y(y){}
 
-    Point():x(0.0), y(0.0){}
-    Point(float x, float y):x(x), y(y){}
-
-};
+// };
 
 static int zoom_limit = 20;
 static int speed_limit = 20;
@@ -66,6 +68,7 @@ bool gravitate_mouse = false;
 float array_prod[MAX_HEIGHT][MAX_WIDTH];
 
 Doodle* doodle;
+Doodle* doodle2;
 
 Brizoler::Brizoler()
 {
@@ -160,9 +163,12 @@ bool Brizoler::OnInit()
 
     this->input = new InputHandler();
 
-    doodle = new Pattern();
+    doodle = new Plotter();
+    doodle2 = new StarPaint();
+    // doodle = new Pattern();
 
     doodle->Initialize((Window*)this->wi, (InputHandler*)this->input);
+    doodle2->Initialize((Window*)this->wi, (InputHandler*)this->input);
 
     // SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEnyy_HEIGHT, SDL_WINDOW_RESIZABLE, &(this->window), &(this->renderer));
 
@@ -229,8 +235,8 @@ void Brizoler::InputRefresh()
     if(input->keystate[SDL_SCANCODE_ESCAPE]){OnExit(); }
 
     if(input->keystate[SDL_SCANCODE_1]){ mode = 1;}
-    else if(input->keystate[SDL_SCANCODE_2]){ mode = 2;}
-    else if(input->keystate[SDL_SCANCODE_3]){ mode = 3;}
+    // else if(input->keystate[SDL_SCANCODE_2]){ mode = 2;}
+    // else if(input->keystate[SDL_SCANCODE_3]){ mode = 3;}
     else if(input->keystate[SDL_SCANCODE_4]){ mode = 4;}
     else if(input->keystate[SDL_SCANCODE_5]){ mode = 5;}
     else if(input->keystate[SDL_SCANCODE_6]){ mode = 6;}
@@ -679,13 +685,7 @@ void Brizoler::Rect(int left_cornerX, int left_cornerY, int width, int height, u
 
 void Brizoler::BlackScreen()
 {
-    for (int y = 0; y < surf->h; ++y)
-    {
-        for (int x = 0; x < surf->w; ++x)
-        {
-            PaintPixel(x, y, 0, 0, 0);
-        }
-    }
+    this->wi->FillCanvas(0, 0, 0);
 }
 
 void Brizoler::BlurScreen()
@@ -796,7 +796,7 @@ void Brizoler::InfiniteSquares(int num_squares)
 
     offset += 0.1;
 }
-
+/*
 void Brizoler::Stars(uint num_stars)
 {
     static Star **stars = 0;
@@ -839,7 +839,7 @@ void Brizoler::Stars(uint num_stars)
             float dist_sq = radius_x*radius_x + radius_y*radius_y;
             float dist = sqrt(dist_sq);
 
-            normalize_vector(radius_x, radius_y);
+            normalizeVector(radius_x, radius_y);
 
             float G = 0.1;
             float mouse_mass = 0.5;
@@ -857,7 +857,7 @@ void Brizoler::Stars(uint num_stars)
                 {
                     float in_angle = atan2(-radius_y, -radius_x);
 
-                    rotate_vector(stars[i]->vel_x, stars[i]->vel_y, (M_PI)- 2*in_angle);
+                    rotateVector(stars[i]->vel_x, stars[i]->vel_y, (M_PI)- 2*in_angle);
                     stars[i]->vel_x *= 0.9;
                     stars[i]->vel_y *= 0.9;
                     accel = 0.01;
@@ -932,204 +932,7 @@ void Brizoler::Stars(uint num_stars)
     change_speed_up = false;
     change_speed_down = false;
 }
-
-float Brizoler::CalculateFunc(float x)
-{
-    // float result = param_speed*90000 - x*x + 10;
-    // if(result < 0)
-    // {
-    //     return 10*x/fabs(x);
-    // }
-    // else
-    // {
-    //     return sqrt(result);
-    // }
-
-    static float offset = 0;
-    static float inc = 0.001;
-    static float persist_inc = 0;
-
-    offset += inc;
-    float inc_limit = 100*inc;
-
-    if(inc > 0)
-    {
-        if(persist_inc <= inc_limit)
-            persist_inc += inc;
-        else
-            inc = -inc;
-    }
-    else
-    {
-        if(persist_inc >= 0)
-            persist_inc += inc;
-        else
-            inc = -inc;
-    }
-
-    float param_x = 2*param_speed/speed_limit;
-    float param_y = -0.5 + param_zoom/zoom_limit;
-
-    const int amplitude = 400;
-    const int max_freq = 200;
-
-    // return (param_x)*x*x + -(surf->h/2)+(surf->h)*(param_y);
-    return amplitude*sin(param_x*max_freq*(x/surf->w)*2*M_PI+ offset) + (param_y*(surf->h-amplitude*2));
-    // return amplitude*tan(param_x*max_freq*(x/surf->w)*2*M_PI+ offset) + (param_y*(surf->h-amplitude*2));
-    // return 400*(param_y)*sin((x/surf->w)*2*M_PI*100*(param_x));
-}
-
-void Brizoler::Plot() // in the form of y = 3x + 4
-{
-
-    BlackScreen();
-
-    vector<Point> func_pts;
-    vector<Point>::iterator it_pts;
-
-    float zero_x = (float)surf->w/2;
-    float zero_y = (float)surf->h/2;
-    float cart_y_min = (float)-surf->h/2;
-    float cart_y_max = (float)surf->h/2;
-
-    PaintRow(zero_y, 0, surf->w, 1, 125, 125, 125);
-    PaintColumn(zero_x, 0, surf->h, 1, 125, 125, 125);
-
-    for (int x = 0; x < surf->w; x++)
-    {
-        float cart_x = -zero_x+x;
-        float cart_y = CalculateFunc(cart_x);
-
-        float y = zero_y - cart_y;
-
-        // if(cart_y <= cart_y_max && cart_y >= cart_y_min)
-        {
-            func_pts.push_back(Point(x,y));
-        }
-
-    }
-
-    int count = 0;
-    for(it_pts = func_pts.begin(); it_pts < func_pts.end()-1; it_pts++)
-    {
-        Point pts_current = *it_pts;
-        Point pts_next = *(it_pts+1);
-
-        // if(pts_next.x == pts_current.x+1) // this is valid for cartesian ploting
-        {
-
-            PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, 255, 255, 255);
-            // PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, sin(pts_current.x)*255, cos(pts_current.x)*255, tan(pts_current.x)*255);
-            // PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, ((sin(persist_inc*M_PI)+1)/2)*255, (pts_current.y)*255, (pts_current.x * pts_current.y)*255);
-        }
-        count++;
-    }
-    return;
-}
-
-float Brizoler::CalculatePolarFunc(float angle)
-{
-    static float inc = 0.001;
-    static float persist_inc = 0;
-
-    float inc_limit = 2*M_PI;
-
-    if(inc > 0)
-    {
-        if(persist_inc <= inc_limit)
-            persist_inc += inc;
-        else
-            persist_inc = 0;
-            // inc = -inc;
-    }
-    else
-    {
-        if(persist_inc >= 0)
-            persist_inc += inc;
-        else
-            inc = -inc;
-    }
-    // return (5*angle + angle*tan(angle*10 + 10*(param_zoom/zoom_limit)*persist_inc));
-    return 2*(5*angle + angle*sin(angle*10 + 10*(param_zoom/zoom_limit)*persist_inc))*sin(angle*10 + 10*(param_zoom/zoom_limit)*persist_inc);
-}
-
-void Brizoler::PolarPlot() // in the form of y = 3x + 4
-{
-    BlackScreen();
-
-    vector<Point> plot_pts;
-    vector<Point> func_pts;
-    vector<Point>::iterator it_pts;
-
-    float zero_x = (float)surf->w/2;
-    float zero_y = (float)surf->h/2;
-
-    float cart_y_min = (float)-surf->h/2;
-    float cart_y_max = (float)surf->h/2;
-
-    float cart_x_min = (float)-surf->w/2;
-    float cart_x_max = (float)surf->w/2;
-
-    PaintRow(zero_y, 0, surf->w, 1, 125, 125, 125);
-    PaintColumn(zero_x, 0, surf->h, 1, 125, 125, 125);
-
-
-    for (float angle = 0; angle <= 5*2*M_PI;)
-    {
-        float delta_angle = 0.01;
-
-        float radius = CalculatePolarFunc(angle);
-
-        float cart_x = radius*cos(angle);
-        float cart_y = radius*sin(angle);
-
-        // if(cart_y <= cart_y_max
-        //     && cart_y >= cart_y_min
-        //     && cart_x <= cart_x_max
-        //     && cart_x >= cart_x_min)
-        {
-            float x = -cart_x + zero_x;
-            float y = zero_y - cart_y;
-
-            func_pts.push_back(Point(x,y));
-        }
-
-        angle += delta_angle;
-        if(delta_angle > 0.0001)
-            delta_angle -= 0.0001;
-
-    }
-
-    int count = 0;
-    float jumps = 100.0f*(float)param_speed/speed_limit + 1;
-    for(it_pts = func_pts.begin(); it_pts < func_pts.end()-1; it_pts++)
-    {
-        if(1)
-        // if(count % (int)jumps == 0)
-        {
-            plot_pts.push_back(*it_pts);
-        }
-
-        count ++;
-    }
-
-    for(it_pts = plot_pts.begin(); it_pts < plot_pts.end()-1; it_pts++)
-    {
-        Point pts_current = *it_pts;
-        Point pts_next = *(it_pts+1);
-
-        // if(pts_next.x == pts_current.x+1) // this is valid for cartesian ploting
-        {
-            // PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, 255, 255, 255);
-            PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, sin(pts_current.x)*255, cos(pts_current.x)*255, tan(pts_current.x)*255);
-            // PaintLine(pts_current.x, pts_current.y, pts_next.x, pts_next.y, 1, ((sin(persist_inc*M_PI)+1)/2)*255, (pts_current.y)*255, (pts_current.x * pts_current.y)*255);
-        }
-    }
-
-
-    return;
-}
-
+*/
 void Brizoler::OnPaint(int OffsetX, int OffsetY)
 {
     if(SDL_MUSTLOCK(surf))
@@ -1149,73 +952,11 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
     {
         case 1:
         {
-            // for (int y = 0; y < surf->h; ++y)
-            // {
-            //     for (int x = 0; x < surf->w; ++x)
-            //     {
-            //         prod = (int)((y*y + x*x)*param_zoom);
-            //         red = (prod + OffsetX)%256;
-            //         green = (prod + (int)(param_speed*OffsetY))%256;
-            //         blue = (prod)%256;
-
-            //         PaintPixel(x, y, red, green ,blue);
-            //     }
-            // }
             doodle->InputRefresh();
             doodle->Run();
-
-
         }break;
-        case 2:
-        {
 
-            for (int y = 0; y < surf->h; ++y)
-            {
-                for (int x = 0; x < surf->w; ++x)
-                {
-                    prod = (int)(y*x*param_zoom);
-                    red = (prod + OffsetX)%256;
-                    green = (prod + (int)(param_speed*OffsetY))%256;
-                    blue = (prod)%256;
-
-                    PaintPixel(x, y, red, green, blue);
-                }
-            }
-
-
-        }break;
-        case 3:
-        {
-
-            for (int y = 0; y < surf->h; ++y)
-            {
-                for (int x = 0; x < surf->w; ++x)
-                {
-
-                    if(y%2 != 0)
-                        // prod = (int)(sin((x/surf->w)*(y/surf->h) * 2 * M_PI + 40 )*param_zoom);
-                        // prod = (int)((y*y + x*x)*param_zoom);
-                        prod = (int)(256*sin(y)*param_zoom);
-                    else
-                        // prod = (int)(log((surf->h*surf->w - y*x) +1)*param_zoom*100);
-                        prod = (int)(256*cos(x)*param_zoom);
-                        // prod = (int)(y*x*param_zoom);
-                    red = (prod + OffsetX)%256;
-                    green = (prod + (int)(param_speed*OffsetY))%256;
-                    blue = (prod)%256;
-
-                    PaintPixel(x, y, red, green, blue);
-                }
-            }
-
-
-        }break;
         case 4:
-        {
-            Plot();
-            // PolarPlot();
-
-        }break;
         case 5:
         {
             static int num = 30;
@@ -1245,29 +986,28 @@ void Brizoler::OnPaint(int OffsetX, int OffsetY)
 
         case 6:
         {
-            static int num_stars = 1000;
-            Stars(num_stars);
-
+            // static int num_stars = 1000;
+            // Stars(num_stars);
+            doodle2->InputRefresh();
+            doodle2->Run();
         }break;
 
         case 7:
         {
-            PolarPlot();
+            for (int y = 0; y < surf->h; ++y)
+            {
+                for (int x = 0; x < surf->w; ++x)
+                {
+                    prod = (int)(array_prod[y][x]*100*param_zoom);
+                    // prod = (int)(( tan(y*2*M_PI/surf->h) + tan((float)x*2*M_PI/surf->w))*param_zoom);
+                    red = (prod + OffsetX)%256;
+                    green = (prod + (int)(param_speed*OffsetY))%256;
+                    blue = (prod)%256;
 
-            // for (int y = 0; y < surf->h; ++y)
-            // {
-            //     for (int x = 0; x < surf->w; ++x)
-            //     {
-            //         prod = (int)(array_prod[y][x]*100*param_zoom);
-            //         // prod = (int)(( tan(y*2*M_PI/surf->h) + tan((float)x*2*M_PI/surf->w))*param_zoom);
-            //         red = (prod + OffsetX)%256;
-            //         green = (prod + (int)(param_speed*OffsetY))%256;
-            //         blue = (prod)%256;
-
-            //         PaintPixel(x, y, red, green ,blue);
-            //         // PaintPixel(x,y,x,y,x+y);
-            //     }
-            // }
+                    PaintPixel(x, y, red, green ,blue);
+                    // PaintPixel(x,y,x,y,x+y);
+                }
+            }
 
         }break;
 

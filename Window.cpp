@@ -2,15 +2,14 @@
 
 Window::Window(int w, int h):w(w), h(h)
 {
-    // this->canvas = new Uint32[w*h];
     canvas = SDL_CreateRGBSurface(0,
-                                    w, /*width , 0 means any width*/
-                                    h, /*height, 0 means any height*/
-                                    32, /*bites per pixel, 0 means use current*/
-                                    0x00FF0000,
-                                    0x0000FF00,
-                                    0x000000FF,
-                                    0xFF000000);
+                                  w, /*width , 0 means any width*/
+                                  h, /*height, 0 means any height*/
+                                  32, /*bites per pixel, 0 means use current*/
+                                  0x00FF0000,
+                                  0x0000FF00,
+                                  0x000000FF,
+                                  0xFF000000);
 
     SDL_CreateWindowAndRenderer(w, h, SDL_WINDOW_RESIZABLE, &(this->window), &(this->renderer));
 
@@ -24,17 +23,16 @@ Window::Window(int w, int h):w(w), h(h)
 Window::~Window()
 {
     SDL_FreeSurface(canvas);
-    // delete[] this->canvas;
+}
+
+void Window::FillCanvas(Uint8 r, Uint8 g, Uint8 b)
+{
+    Uint32 color = r << 16 | g << 8 | b;
+    SDL_FillRect(this->canvas, 0, color);
 }
 
 bool Window::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
-
-    // SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
-    // SDL_RenderDrawPoint(renderer, x, y);
-
-    // return true;
-
     bool result = false;
     Uint32 *pixel = (Uint32*)this->canvas->pixels;
 
@@ -61,7 +59,7 @@ bool Window::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b)
 }
 
 
-void Window::DrawLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 red, Uint8 green, Uint8 blue)
+void Window::DrawLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 r, Uint8 g, Uint8 b)
 {
     KILL_DENORMAL_BY_QUANTIZATION(x1);
     KILL_DENORMAL_BY_QUANTIZATION(y1);
@@ -214,7 +212,7 @@ void Window::DrawLine(float x1, float y1, float x2, float y2, uint thickness, Ui
 
     while((x-x2)*dx <= 0 && (y-y2)*dy <= 0)
     {
-        DrawPixel(xi, yi, red, green, blue);
+        DrawPixel(xi, yi, r, g, b);
         x += dx;
         y += dy;
         xi = (int)(x + 0.5);
@@ -251,7 +249,7 @@ void Window::DrawLine(float x1, float y1, float x2, float y2, uint thickness, Ui
     }
     if(y2 >= 0 && y2 < this->h && x2 >= 0 && x2 < this->w)
     {
-        DrawPixel(x2, y2, red, green, blue);
+        DrawPixel(x2, y2, r, g, b);
     }
 
 }

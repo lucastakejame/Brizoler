@@ -2,8 +2,9 @@
 
 Pattern::Pattern()
 {
-    paramZoom = 1;
-    paramSpeed = 1;
+    paramZoom = 11;
+    paramSpeed = 11;
+    mode = 1;
 }
 
 Pattern::~Pattern(){}
@@ -11,6 +12,10 @@ Pattern::~Pattern(){}
 void Pattern::InputRefresh()
 {
     float delta = 0.1;
+
+    if(input->keystate[SDL_SCANCODE_1]) {mode = 1; }
+    if(input->keystate[SDL_SCANCODE_2]) {mode = 2; }
+    if(input->keystate[SDL_SCANCODE_3]) {mode = 3; }
 
     if(input->mL)
     {
@@ -75,16 +80,69 @@ void Pattern::Run()
     OffsetX++;
     OffsetY++;
 
-    for (int y = 0; y < window->GetH(); ++y)
+    switch(mode)
     {
-        for (int x = 0; x < window->GetW(); ++x)
+        case 1:
         {
-            int prod = (int)((y*y + x*x)*paramZoom);
-            Uint8 r = (prod + OffsetX)%256;
-            Uint8 g = (prod + (int)( paramSpeed*OffsetY ))%256;
-            Uint8 b = (prod)%256;
+            for (int y = 0; y < window->GetH(); ++y)
+            {
+                for (int x = 0; x < window->GetW(); ++x)
+                {
+                    int prod = (int)((y*y + x*x)*paramZoom);
+                    Uint8 r = (prod + OffsetX)%256;
+                    Uint8 g = (prod + (int)( paramSpeed*OffsetY ))%256;
+                    Uint8 b = (prod)%256;
 
-            window->DrawPixel(x, y, r, g ,b);
-        }
+                    window->DrawPixel(x, y, r, g ,b);
+                }
+            }
+
+        }break;
+
+        case 2:
+        {
+            for (int y = 0; y < window->GetH(); ++y)
+            {
+                for (int x = 0; x < window->GetW(); ++x)
+                {
+                    int prod = (int)(y*x*paramZoom);
+                    Uint8 r = (prod + OffsetX)%256;
+                    Uint8 g = (prod + (int)(paramSpeed*OffsetY))%256;
+                    Uint8 b = (prod)%256;
+
+                    window->DrawPixel(x, y, r, g, b);
+                }
+            }
+
+        }break;
+
+        case 3:
+        {
+            for (int y = 0; y < window->GetH(); ++y)
+            {
+                for (int x = 0; x < window->GetW(); ++x)
+                {
+                    int prod;
+                    if(y%2 != 0)
+                        // prod = (int)(sin((x/window->GetW())*(y/window->GetH()) * 2 * M_PI + 40 )*paramZoom);
+                        // prod = (int)((y*y + x*x)*paramZoom);
+                        prod = (int)(256*sin(y)*paramZoom);
+                    else
+                        // prod = (int)(log((window->GetH()*window->GetW() - y*x) +1)*paramZoom*100);
+                        prod = (int)(256*cos(x)*paramZoom);
+                        // prod = (int)(y*x*paramZoom);
+
+                    Uint8 r = (prod + OffsetX)%256;
+                    Uint8 g = (prod + (int)(paramSpeed*OffsetY))%256;
+                    Uint8 b = (prod)%256;
+
+                    window->DrawPixel(x, y, r, g, b);
+                }
+            }
+        }break;
+
+        default:
+        break;
     }
+
 }

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <math.h>
 
 using namespace std;
 
@@ -28,5 +29,10 @@ using namespace std;
 }
 
 void KILL_DENORMAL_BY_QUANTIZATION (float &val);
+
+void rotateVector(float& x, float& y, float rad);
+
+void normalizeVector(float& x, float& y);
+
 
 #endif
