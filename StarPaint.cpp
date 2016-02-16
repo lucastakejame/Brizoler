@@ -29,10 +29,30 @@ bool StarPaint::Initialize(Window* window, InputHandler* input)
 {
     Doodle::Initialize(window, input);
 
-    int wW = 200;
-    int wH = 200;
-    // int wW = window->GetW();
-    // int wH = window->GetH();
+    previewCanvas = SDL_CreateRGBSurface(0,
+                                  window->GetW(), /*width , 0 means any width*/
+                                  window->GetH(), /*height, 0 means any height*/
+                                  32, /*bites per pixel, 0 means use current*/
+                                  0x00FF0000,
+                                  0x0000FF00,
+                                  0x000000FF,
+                                  0xFF000000);
+
+    drawCanvas = SDL_CreateRGBSurface(0,
+                                  window->GetW(), /*width , 0 means any width*/
+                                  window->GetH(), /*height, 0 means any height*/
+                                  32, /*bites per pixel, 0 means use current*/
+                                  0x00FF0000,
+                                  0x0000FF00,
+                                  0x000000FF,
+                                  0xFF000000);
+
+
+    SDL_SetSurfaceBlendMode(drawCanvas, SDL_BLENDMODE_NONE);
+    SDL_SetSurfaceBlendMode(previewCanvas, SDL_BLENDMODE_BLEND);
+
+    int wW = window->GetW();
+    int wH = window->GetH();
 
 
     canvasLimitX1 = 0 - wW;
@@ -55,6 +75,8 @@ void StarPaint::InputRefresh()
     mY = input->mY;
 
     gravitateMouse = input->mL ? true : false;
+
+    painting = input->keystate[SDL_SCANCODE_P] ? true : false;
 
     if(input->keystate[SDL_SCANCODE_B])
     {
@@ -109,6 +131,9 @@ void StarPaint::Run()
         canvasLimitY1 = mY - tempH/2;
         canvasLimitY2 = mY + tempH/2;
     }
+
+    // Clearing previewCanvas
+    SDL_FillRect(previewCanvas, 0, 0x00000000);
 
     for(uint i = 0; i < stars.size(); i++)
     {
@@ -236,7 +261,14 @@ void StarPaint::Run()
             }
         }
 
-        Draw(i);
+        if(painting)
+        {
+            Draw(i);
+        }
+        else
+        {
+            Show(i);
+        }
 
         // if(count % count2 == 0)
         // if(stars_change_direction_flag)
@@ -245,6 +277,13 @@ void StarPaint::Run()
         // }
         // count2 = (int) 50 + 25*sin(count);
     }
+
+    SDL_BlitSurface(drawCanvas, 0, window->canvas, 0);
+    if(!painting)
+    {
+        SDL_BlitSurface(previewCanvas, 0, window->canvas, 0);
+    }
+
 
 
 
@@ -262,7 +301,6 @@ void StarPaint::Draw(int idx)
 
     float dx = (stars[idx].pX - stars[idx].lastpX);
     float dy = (stars[idx].pY - stars[idx].lastpY);
-
 
     normalizeVector(dx, dy);
 
@@ -284,7 +322,7 @@ void StarPaint::Draw(int idx)
                 for (int ii = (int)i-1; ii < (int)i+2; ++ii)
                 {
                     SDL_Color c = stars[idx].sprite[jj - (int)j + 1][ii - (int)i + 1];
-                    window->DrawPixel(ii, jj, c.r, c.g, c.b);
+                    window->DrawPixel(ii, jj, c.r, c.g, c.b, drawCanvas);
                 }
             }
         }
@@ -327,3 +365,20 @@ void StarPaint::BigBang(int x, int y)
     }
 
 }
+
+void StarPaint::Show(int idx)
+{
+
+    int i = stars[idx].pX;
+    int j = stars[idx].pY;
+
+    for (int jj = (int)j-1; jj < (int)j+2; ++jj)
+    {
+        for (int ii = (int)i-1; ii < (int)i+2; ++ii)
+        {
+            SDL_Color c = stars[idx].sprite[jj - (int)j + 1][ii - (int)i + 1];
+            window->DrawPixel(ii, jj, c.r, c.g, c.b, previewCanvas);
+        }
+    }
+}
+

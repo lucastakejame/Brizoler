@@ -31,6 +31,33 @@ void Window::FillCanvas(Uint8 r, Uint8 g, Uint8 b)
     SDL_FillRect(this->canvas, 0, color);
 }
 
+bool Window::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, SDL_Surface* outCanvas)
+{
+    bool result = false;
+    Uint32 *pixel = (Uint32*)outCanvas->pixels;
+
+
+    if(SDL_MUSTLOCK(outCanvas))
+    {
+        SDL_LockSurface(outCanvas);
+    }
+
+    if(0 <= x && x < this->w
+    && 0 <= y && y < this->h)
+    {
+        pixel[y*this->w + x] = SDL_MapRGB(outCanvas->format, r, g, b);
+        // pixel[y*this->w + x] = 10;
+        result = true;
+    }
+
+    if(SDL_MUSTLOCK(outCanvas))
+    {
+        SDL_UnlockSurface(outCanvas);
+    }
+
+    return result;
+}
+
 bool Window::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
     bool result = false;

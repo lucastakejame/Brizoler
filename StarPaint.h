@@ -12,6 +12,9 @@ public:
     int mode;
     vector<Star> stars;
 
+    SDL_Surface* previewCanvas;
+    SDL_Surface* drawCanvas;
+
     bool painting;
     bool gravitateMouse;
     bool bounce;
@@ -39,6 +42,8 @@ public:
     void Run();
 
     void Draw(int idx);
+
+    void Show(int idx);
 
     void BigBang(int x, int y);
 };

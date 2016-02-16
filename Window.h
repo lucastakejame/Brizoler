@@ -42,6 +42,8 @@ public:
 
     bool DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b);
 
+    bool DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, SDL_Surface* canvas);
+
     void DrawLine(float x1, float y1, float x2, float y2, uint thickness, Uint8 r, Uint8 g, Uint8 b);
 
     void RefreshCanvas();
