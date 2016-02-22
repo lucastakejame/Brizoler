@@ -5,6 +5,7 @@
 #include "Doodle.h"
 #include "utils.h"
 #include <vector>
+#include <complex>
 
 class StarPaint : public Doodle
 {

@@ -53,6 +53,10 @@ void Star::Move()
 
 void Star::SetColor(unsigned char red, unsigned char green, unsigned char blue)
 {
+    this->red = red;
+    this->green = green;
+    this->blue = blue;
+
     // Sets color in an arbitrary way.
     this->sprite[0][0] = {red, green, blue, 255};
     this->sprite[1][0] = {red, 255, 255, 255};
@@ -66,5 +70,18 @@ void Star::SetColor(unsigned char red, unsigned char green, unsigned char blue)
     this->sprite[0][2] = {red, green, blue, 255};
     this->sprite[1][2] = {255, 255, 255, 255};
     this->sprite[2][2] = {red, green, blue, 255};
+
+/*    // Sets color raw.
+    this->sprite[0][0] = {red, green, blue, 255};
+    this->sprite[1][0] = {red, green, blue, 255};
+    this->sprite[2][0] = {red, green, blue, 255};
+
+    this->sprite[0][1] = {red, green, blue, 255};
+    this->sprite[1][1] = {red, green, blue, 255};
+    this->sprite[2][1] = {red, green, blue, 255};
+
+    this->sprite[0][2] = {red, green, blue, 255};
+    this->sprite[1][2] = {red, green, blue, 255};
+    this->sprite[2][2] = {red, green, blue, 255};*/
 
 }

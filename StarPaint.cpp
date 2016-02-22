@@ -14,7 +14,7 @@ StarPaint::StarPaint()
 
     moveCanvas = false;
 
-    int numStars = 2000;
+    int numStars = 6000;
 
     for (int i = 0; i < numStars; ++i)
     {
@@ -67,9 +67,9 @@ void StarPaint::InputRefresh()
 {
     float delta = 0.1;
 
-    if(input->keystate[SDL_SCANCODE_1]) {mode = 1; }
-    if(input->keystate[SDL_SCANCODE_2]) {mode = 2; }
-    if(input->keystate[SDL_SCANCODE_3]) {mode = 3; }
+    if(input->keystate[SDL_SCANCODE_U]) {mode = 1; }
+    if(input->keystate[SDL_SCANCODE_I]) {mode = 2; }
+    if(input->keystate[SDL_SCANCODE_O]) {mode = 3; }
 
     mX = input->mX;
     mY = input->mY;
@@ -178,7 +178,7 @@ void StarPaint::Run()
             // accel = G*mouse_mass*dist/10;
             // accel = 1000*G*mouse_mass*(dist-mouseRadius)/(distSq);
             // accel = 1000*G*mouse_mass/(distSq);
-            accel = G*mouse_mass*10; /// this way is more interesting
+            accel = G*mouse_mass*5; /// this way is more interesting
 
             // CHANGE_MIN_MAX(accel, min_accel, max_accel)
             // CHANGE_MIN_MAX(radiusX, min_radius_x, max_radius_x)
@@ -261,6 +261,30 @@ void StarPaint::Run()
             }
         }
 
+        {
+            unsigned char r;
+            unsigned char g;
+            unsigned char b;
+
+            std::complex<double> posVector (stars[i].pX/window->GetW() - 1/2.0f, stars[i].pY/window->GetH() - 1/2.0f);
+            std::complex<double> velVector (stars[i].velX, stars[i].velY);
+            std::complex<double> accelVector (stars[i].accelX, stars[i].accelY);
+
+            // hue , rad to degree
+            // float hue = ((std::arg(posVector) + M_PI)/(2*M_PI)) * 360;
+            float hue = ((std::arg(velVector) + M_PI)/(2*M_PI)) * 360;
+            float saturation = 1;
+            float luminance = std::abs(velVector);
+
+            float luminanceRadius = 20.0f;
+
+            luminance = (luminance < luminanceRadius)? luminance/luminanceRadius : 1;
+
+            HSLtoRGB(hue, saturation, luminance, r, g, b);
+
+            stars[i].SetColor(r, g, b);
+        }
+
         if(painting)
         {
             Draw(i);
@@ -277,6 +301,8 @@ void StarPaint::Run()
         // }
         // count2 = (int) 50 + 25*sin(count);
     }
+
+    mode = 0;
 
     SDL_BlitSurface(drawCanvas, 0, window->canvas, 0);
     if(!painting)

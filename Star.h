@@ -16,6 +16,10 @@ struct Star
 {
     SDL_Color sprite[SPRITE_SIZE][SPRITE_SIZE];
 
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+
     float pX;
     float pY;
 
